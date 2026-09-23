@@ -1,0 +1,577 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum WorkspaceType {
+  PERSONAL
+}
+
+enum DocumentVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum SubscriptionPlan {
+  FREE
+  PRO
+  MAX
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  INCOMPLETE
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  API_KEY_CREATED
+  API_KEY_REVOKED
+}
+
+enum CommentStatus {
+  OPEN
+  RESOLVED
+}
+
+enum WebhookEvent {
+  DOCUMENT_CREATED
+  DOCUMENT_UPDATED
+  DOCUMENT_DELETED
+  SUBSCRIPTION_CHANGED
+}
+
+enum WebhookDeliveryStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum PlatformRole {
+  USER
+  ADMIN
+}
+
+enum DpdpPolicyStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum DpdpConsentStatus {
+  GRANTED
+  REJECTED
+  WITHDRAWN
+  PENDING
+}
+
+model User {
+  id            String    @id @default(cuid()) @map("_id")
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  name          String?
+  image         String?
+  deletedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+
+  platformRole       PlatformRole @default(USER)
+  pinnedWorkspaceIds String[]
+
+  razorpayCustomerId     String?
+  razorpaySubscriptionId String?
+  subscriptionPlan       SubscriptionPlan    @default(FREE)
+  subscriptionStatus     SubscriptionStatus?
+  subscriptionPeriodEnd  DateTime?
+
+  ownedWorkspaces  Workspace[]          @relation("OwnerOfWorkspace")
+  authoredDocs     Document[]           @relation("DocumentAuthor")
+  auditLog         AuditLog[]
+  comments         Comment[]
+  notifications    Notification[]
+  resolvedComments Comment[]            @relation("ResolvedByUser")
+  documentVersions DocumentVersion[]
+  billingHistory   BillingTransaction[]
+  paymentOrders    PaymentOrder[]
+  payments         Payment[]
+  ledgerEntries    LedgerEntry[]
+  refunds          Refund[]
+  consentEvents    DpdpConsentEvent[]
+}
+
+model Account {
+  id                    String    @id @default(cuid()) @map("_id")
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  providerType          String?
+  providerId            String
+  providerAccountId     String
+  password              String?
+  refreshToken          String?
+  accessToken           String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  expiresAt             DateTime?
+  tokenType             String?
+  scope                 String?
+  idToken               String?
+  sessionState          String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @default(now()) @updatedAt
+
+  @@unique([providerId, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id        String   @id @default(cuid()) @map("_id")
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique @default(cuid())
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  country   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id @default(cuid()) @map("_id")
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+}
+
+model Workspace {
+  id           String        @id @default(cuid()) @map("_id")
+  name         String
+  slug         String        @unique
+  type         WorkspaceType @default(PERSONAL)
+  logoUrl      String?
+  settings     Json?
+  displayOrder Float         @default(0)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  ownerId String
+  owner   User   @relation("OwnerOfWorkspace", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  suspendedAt DateTime?
+
+  documents     Document[]
+  notifications Notification[]
+}
+
+model Document {
+  id          String             @id @default(cuid()) @map("_id")
+  title       String
+  slug        String
+  icon        String?
+  coverImage  String?
+  content     String?
+  visibility  DocumentVisibility @default(PRIVATE)
+  isPublished Boolean            @default(false)
+  order       Float              @default(0)
+  readingTime Int?
+  tags        String[]
+
+  parentId String?
+  parent   Document?  @relation("DocumentTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children Document[] @relation("DocumentTree")
+
+  authorId String?
+  author   User?   @relation("DocumentAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  versions DocumentVersion[]
+  comments Comment[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@unique([workspaceId, parentId, slug])
+  @@index([authorId])
+  @@index([workspaceId, visibility])
+  @@index([parentId])
+  @@index([workspaceId, deletedAt])
+}
+
+model DocumentVersion {
+  id            String  @id @default(cuid()) @map("_id")
+  title         String
+  content       String
+  versionNumber Int
+  changeSummary String?
+
+  createdBy String
+  author    User   @relation(fields: [createdBy], references: [id])
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([documentId, versionNumber])
+  @@index([documentId])
+}
+
+model Comment {
+  id      String        @id @default(cuid()) @map("_id")
+  content String
+  status  CommentStatus @default(OPEN)
+
+  parentId String?
+  parent   Comment?  @relation("CommentThread", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  replies  Comment[] @relation("CommentThread")
+
+  resolvedAt   DateTime?
+  resolvedById String?
+  resolvedBy   User?     @relation("ResolvedByUser", fields: [resolvedById], references: [id])
+
+  selectionRange Json?
+
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  authorId String
+  author   User   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([documentId])
+  @@index([authorId])
+}
+
+model Notification {
+  id      String    @id @default(cuid()) @map("_id")
+  type    String
+  payload Json?
+  isRead  Boolean   @default(false)
+  readAt  DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, isRead])
+  @@index([workspaceId])
+}
+
+model AuditLog {
+  id           String      @id @default(cuid()) @map("_id")
+  action       AuditAction
+  resourceType String
+  resourceId   String?
+  details      Json?
+  ipAddress    String?
+  userAgent    String?
+
+  actorId String
+  actor   User   @relation(fields: [actorId], references: [id])
+
+  workspaceId String?
+
+  createdAt DateTime @default(now())
+
+  @@index([workspaceId])
+  @@index([actorId])
+  @@index([action])
+  @@index([resourceType, resourceId])
+}
+
+model BillingTransaction {
+  id                String  @id @default(cuid()) @map("_id")
+  amount            Int
+  currency          String  @default("inr")
+  description       String?
+  status            String
+  razorpayPaymentId String? @unique
+  planSnapshot      String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model PlatformSetting {
+  key       String   @id @map("_id")
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+enum PaymentOrderStatus {
+  PENDING
+  PAID
+  FAILED
+  CANCELLED
+  PARTIALLY_REFUNDED
+  REFUNDED
+}
+
+enum PaymentStatus {
+  CREATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUND_PENDING
+  PARTIALLY_REFUNDED
+  REFUNDED
+  CANCELLED
+}
+
+enum LedgerTransactionType {
+  PAYMENT
+  REFUND
+}
+
+enum LedgerTransactionStatus {
+  SUCCESS
+  FAILED
+  PENDING
+}
+
+enum RefundStatus {
+  REQUESTED
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
+model PaymentOrder {
+  id          String             @id @default(cuid()) @map("_id")
+  orderNumber String             @unique
+  userId      String
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  amount      Int
+  currency    String             @default("INR")
+  status      PaymentOrderStatus @default(PENDING)
+  description String?
+  metadata    Json?
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  payments Payment[]
+  ledger   LedgerEntry[]
+  refunds  Refund[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model Payment {
+  id                String        @id @default(cuid()) @map("_id")
+  userId            String
+  user              User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId           String
+  order             PaymentOrder  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  razorpayOrderId   String        @unique
+  razorpayPaymentId String?       @unique
+  amount            Int
+  currency          String        @default("INR")
+  status            PaymentStatus @default(CREATED)
+  method            String?
+  failureCode       String?
+  failureReason     String?
+  capturedAt        DateTime?
+  idempotencyKey    String?       @unique
+  metadata          Json?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  ledger  LedgerEntry[]
+  refunds Refund[]
+
+  @@index([userId])
+  @@index([orderId])
+  @@index([status])
+}
+
+model LedgerEntry {
+  id                String                  @id @default(cuid()) @map("_id")
+  userId            String
+  user              User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId           String
+  order             PaymentOrder            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  paymentId         String?
+  payment           Payment?                @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  razorpayPaymentId String?
+  type              LedgerTransactionType
+  amount            Int
+  currency          String                  @default("INR")
+  status            LedgerTransactionStatus @default(SUCCESS)
+  metadata          Json?
+  createdAt         DateTime                @default(now())
+
+  @@unique([razorpayPaymentId, type])
+  @@index([userId])
+  @@index([orderId])
+  @@index([paymentId])
+  @@index([razorpayPaymentId])
+}
+
+model RazorpayWebhookEvent {
+  id              String    @id @default(cuid()) @map("_id")
+  eventId         String    @unique
+  eventType       String
+  payloadHash     String
+  payload         Json
+  processed       Boolean   @default(false)
+  processingError String?
+  receivedAt      DateTime  @default(now())
+  processedAt     DateTime?
+
+  @@index([processed])
+}
+
+model Refund {
+  id               String       @id @default(cuid()) @map("_id")
+  paymentId        String
+  payment          Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
+  orderId          String
+  order            PaymentOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId           String
+  user             User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  razorpayRefundId String?      @unique
+  amount           Int
+  currency         String       @default("INR")
+  reason           String?
+  status           RefundStatus @default(REQUESTED)
+  failureReason    String?
+  idempotencyKey   String?      @unique
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@index([paymentId])
+  @@index([orderId])
+  @@index([userId])
+}
+
+model IdempotencyRecord {
+  id           String   @id @default(cuid()) @map("_id")
+  key          String   @unique
+  path         String
+  requestHash  String
+  responseCode Int
+  responseBody Json
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+
+  @@index([expiresAt])
+}
+
+// ─── DPDP Consent & Policy Management ──────────────────────────────────────
+
+model DpdpPolicy {
+  id          String           @id @default(cuid()) @map("_id")
+  key         String           @unique
+  name        String
+  description String?
+  status      DpdpPolicyStatus @default(DRAFT)
+  createdBy   String
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  deletedAt   DateTime?
+
+  versions      DpdpPolicyVersion[]
+  consentEvents DpdpConsentEvent[]
+
+  @@index([status])
+  @@index([createdBy])
+}
+
+model DpdpPolicyVersion {
+  id                    String           @id @default(cuid()) @map("_id")
+  policyId              String
+  policy                DpdpPolicy       @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  version               Int
+  purpose               String
+  dataCategories        String[]
+  processingDescription String
+  retentionPeriod       String?
+  consentRequired       Boolean          @default(true)
+  content               String?
+  status                DpdpPolicyStatus @default(DRAFT)
+  effectiveFrom         DateTime?
+  effectiveUntil        DateTime?
+  createdAt             DateTime         @default(now())
+  createdBy             String
+  publishedAt           DateTime?
+
+  consentEvents DpdpConsentEvent[]
+
+  @@unique([policyId, version])
+  @@index([policyId])
+  @@index([status])
+}
+
+model DpdpConsentEvent {
+  id              String            @id @default(cuid()) @map("_id")
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  policyId        String
+  policy          DpdpPolicy        @relation(fields: [policyId], references: [id])
+  policyVersionId String
+  policyVersion   DpdpPolicyVersion @relation(fields: [policyVersionId], references: [id])
+  purpose         String
+  status          DpdpConsentStatus
+  consentMethod   String            @default("web_form")
+  source          String            @default("consent_center")
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime          @default(now())
+
+  @@index([userId])
+  @@index([userId, policyId])
+  @@index([policyId])
+  @@index([policyVersionId])
+  @@index([createdAt])
+}
+
+model DpdpAuditLog {
+  id         String   @id @default(cuid()) @map("_id")
+  actorId    String
+  action     String
+  entityType String
+  entityId   String?
+  metadata   Json?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([action])
+  @@index([createdAt])
+}
