@@ -242,9 +242,10 @@ function WorkspaceTreeSection({
   const router = useRouter();
   const { state, isMobile } = useSidebar();
   const isCollapsed = state === "collapsed" && !isMobile;
-  const { data: tree, isLoading } = useGetDocumentTreeQuery(workspace.id, {
-    skip: isCollapsed,
-  });
+  const { data: tree, isLoading } = useGetDocumentTreeQuery(
+    { workspaceId: workspace.id, limit: 3 },
+    { skip: isCollapsed }
+  );
   const [createDoc] = useCreateDocumentMutation();
 
   const handleCreateDoc = async (e: React.MouseEvent) => {
@@ -314,18 +315,18 @@ function WorkspaceTreeSection({
             </SidebarMenuItem>
           ) : tree && tree.length > 0 ? (
             <>
-              {tree.slice(0, 10).map((item) => (
+              {tree.slice(0, 3).map((item) => (
                 <DocTreeItem key={item.id} item={item} workspaceId={workspace.id} />
               ))}
-              {tree.length > 10 && !isCollapsed && (
+              {!isCollapsed && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     render={<Link href="/dashboard/documents" />}
-                    tooltip={`View all (${tree.length})`}
+                    tooltip="View all documents"
                     className="text-[10px] text-muted-foreground hover:text-primary"
                   >
                     <FolderOpen className="h-3.5 w-3.5" />
-                    <span>View all ({tree.length})</span>
+                    <span>View all documents</span>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}

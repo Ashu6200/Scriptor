@@ -93,6 +93,7 @@ export interface PublicDocumentData {
 }
 
 export const documentApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getDocuments: builder.query<
       { data: Document[]; meta: { total: number } },
@@ -110,11 +111,22 @@ export const documentApi = api.injectEndpoints({
             ]
           : [{ type: "Document", id: "LIST" }],
     }),
-    getDocumentTree: builder.query<DocumentTreeItem[], string>({
-      query: (workspaceId) => `/workspaces/${workspaceId}/documents/tree`,
-      providesTags: (result, error, workspaceId) => [
-        { type: "Document", id: `TREE-${workspaceId}` },
-      ],
+    getDocumentTree: builder.query<
+      DocumentTreeItem[],
+      string | { workspaceId: string; limit?: number }
+    >({
+      query: (arg) => {
+        const workspaceId = typeof arg === "string" ? arg : arg.workspaceId;
+        const limit = typeof arg === "object" ? arg.limit : undefined;
+        return {
+          url: `/workspaces/${workspaceId}/documents/tree`,
+          params: limit ? { limit } : undefined,
+        };
+      },
+      providesTags: (result, error, arg) => {
+        const workspaceId = typeof arg === "string" ? arg : arg.workspaceId;
+        return [{ type: "Document", id: `TREE-${workspaceId}` }];
+      },
     }),
     getDocument: builder.query<Document, { workspaceId: string; id: string }>({
       query: ({ workspaceId, id }) => `/workspaces/${workspaceId}/documents/${id}`,
@@ -309,4 +321,3 @@ export const {
   useDeleteCommentMutation,
   useResolveCommentMutation,
 } = documentApi;
-

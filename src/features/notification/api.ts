@@ -19,6 +19,7 @@ export interface Notification {
 }
 
 export const notificationApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getNotifications: builder.query<
       { data: Notification[]; meta: { total: number } },

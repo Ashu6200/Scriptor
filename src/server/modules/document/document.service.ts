@@ -292,7 +292,7 @@ export class DocumentService extends BaseService {
     }
   }
 
-  async getDocumentTree(workspaceId: string, userId?: string) {
+  async getDocumentTree(workspaceId: string, userId?: string, limit?: number) {
     try {
       const conditions: Prisma.DocumentWhereInput[] = [parentIsRoot, notDeleted];
 
@@ -304,7 +304,12 @@ export class DocumentService extends BaseService {
         });
       }
 
-      const cacheKey = workspaceId && workspaceId !== "all" ? `tree:${workspaceId}` : null;
+      const cacheKey =
+        workspaceId && workspaceId !== "all"
+          ? limit
+            ? `tree:${workspaceId}:limit:${limit}`
+            : `tree:${workspaceId}`
+          : null;
       if (cacheKey) {
         const cached = await redis.get<string>(cacheKey);
         if (cached) {
@@ -314,6 +319,7 @@ export class DocumentService extends BaseService {
 
       const tree = await prisma.document.findMany({
         where: { AND: conditions },
+        ...(limit ? { take: limit } : {}),
         select: {
           ...treeNodeSelect,
           children: {

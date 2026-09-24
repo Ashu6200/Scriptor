@@ -9,6 +9,7 @@ export interface SearchDocument {
 }
 
 export const searchApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     searchDocuments: builder.query<{ documents: SearchDocument[] }, string>({
       query: (q) => ({ url: "/search", params: { q } }),

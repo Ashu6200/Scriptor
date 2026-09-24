@@ -8,6 +8,7 @@ export interface DashboardStats {
 }
 
 export const dashboardApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getDashboardStats: builder.query<DashboardStats, void>({
       query: () => "/dashboard/stats",

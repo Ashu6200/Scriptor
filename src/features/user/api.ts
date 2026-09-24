@@ -23,6 +23,7 @@ export interface UserSession {
 }
 
 export const userApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getProfile: builder.query<UserProfile, void>({
       query: () => "/users/profile",

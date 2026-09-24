@@ -86,6 +86,7 @@ interface PaginatedResponse<T> {
 }
 
 export const adminApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getAdminMetrics: builder.query<AdminMetrics, void>({
       query: () => "/admin/metrics",

@@ -47,6 +47,7 @@ export interface VerifyPaymentOrderPayload {
 }
 
 export const billingApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getSubscription: builder.query<Subscription, string>({
       query: (workspaceId) => `/workspaces/${workspaceId}/billing/subscription`,

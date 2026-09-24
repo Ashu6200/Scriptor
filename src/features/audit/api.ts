@@ -42,6 +42,7 @@ export interface AuditLog {
 }
 
 export const auditApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getAuditLogs: builder.query<
       { data: AuditLog[]; meta: { total: number } },

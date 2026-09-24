@@ -12,6 +12,7 @@ export interface Workspace {
 }
 
 export const workspaceApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     getWorkspaces: builder.query<Workspace[], void>({
       query: () => "/workspaces",

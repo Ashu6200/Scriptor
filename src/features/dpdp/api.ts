@@ -89,6 +89,7 @@ interface PaginatedResponse<T> {
 // ─── API Endpoints ──────────────────────────────────────────────────────
 
 export const dpdpApi = api.injectEndpoints({
+  overrideExisting: true,
   endpoints: (builder) => ({
     // ── Policy CRUD ─────────────────────────────────────────────────
     listPolicies: builder.query<
