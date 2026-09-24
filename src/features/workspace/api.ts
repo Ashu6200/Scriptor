@@ -6,6 +6,7 @@ export interface Workspace {
   slug: string;
   type: "PERSONAL";
   logoUrl?: string | null;
+  isPinned?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -52,6 +53,21 @@ export const workspaceApi = api.injectEndpoints({
         url: `/workspaces/${workspaceId}/pin`,
         method: "POST",
       }),
+      async onQueryStarted(workspaceId, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          workspaceApi.util.updateQueryData("getWorkspaces", undefined, (draft) => {
+            const ws = draft.find((w) => w.id === workspaceId);
+            if (ws) {
+              ws.isPinned = !ws.isPinned;
+            }
+          })
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
       invalidatesTags: ["Workspace"],
     }),
     reorderPinnedWorkspacesApi: builder.mutation<Workspace[], string[]>({

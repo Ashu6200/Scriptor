@@ -33,6 +33,7 @@ export const api = createApi({
     "Billing",
     "Admin",
     "Dpdp",
+    "Dashboard",
   ],
   endpoints: () => ({}),
 });

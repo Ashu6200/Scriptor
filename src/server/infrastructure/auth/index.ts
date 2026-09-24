@@ -94,6 +94,7 @@ export const auth = betterAuth({
 
   emailAndPassword: {
     enabled: true,
+    disableSignUp: true,
     minPasswordLength: 8,
     maxPasswordLength: 128,
     requireEmailVerification: config.REQUIRE_EMAIL_VERIFICATION === "true",
@@ -143,7 +144,7 @@ export const auth = betterAuth({
         after: async (user: { id: string }) => {
           await prisma.user.update({
             where: { id: user.id },
-            data: { agreedToTermsAt: new Date() },
+            data: { agreedToTermsAt: new Date() } as any,
           });
 
           // Record DPDP consent event for Terms of Service acceptance
@@ -217,20 +218,7 @@ export const auth = betterAuth({
         }
       : { enabled: false },
 
-  socialProviders: {
-    ...(process.env.GOOGLE_CLIENT_ID && {
-      google: {
-        clientId: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
-      },
-    }),
-    ...(process.env.GITHUB_CLIENT_ID && {
-      github: {
-        clientId: process.env.GITHUB_CLIENT_ID,
-        clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
-      },
-    }),
-  },
+  socialProviders: {},
 
   advanced: {
     useSecureCookies: config.NODE_ENV === "production",

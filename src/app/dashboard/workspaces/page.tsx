@@ -33,7 +33,6 @@ import {
   type Workspace,
   useCreateWorkspaceMutation,
   useDeleteWorkspaceMutation,
-  useGetPinnedWorkspacesQuery,
   useGetWorkspacesQuery,
   useTogglePinWorkspaceApiMutation,
   useUpdateWorkspaceMutation,
@@ -173,8 +172,7 @@ export default function WorkspacesPage() {
 
 function WorkspaceCard({ workspace }: { workspace: Workspace }) {
   const [togglePinApi] = useTogglePinWorkspaceApiMutation();
-  const { data: pinnedWorkspaces = [] } = useGetPinnedWorkspacesQuery();
-  const isPinned = pinnedWorkspaces.some((ws) => ws.id === workspace.id);
+  const isPinned = Boolean(workspace.isPinned);
 
   const router = useRouter();
   const [isExpanded, setIsExpanded] = useState(false);

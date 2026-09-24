@@ -21,7 +21,7 @@ export function CommandPalette() {
   }, [query]);
 
   const { data, isFetching } = useSearchDocumentsQuery(debouncedQuery, {
-    skip: debouncedQuery.length < 2,
+    skip: !open || debouncedQuery.length < 2,
   });
 
   const results = data?.documents ?? [];

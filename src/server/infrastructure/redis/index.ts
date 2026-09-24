@@ -58,9 +58,6 @@ export interface RetryOptions {
   shouldRetry?: (error: unknown) => boolean;
 }
 
-/**
- * Execute an arbitrary Redis operation with exponential backoff retry logic and limits.
- */
 export async function withRetry<T>(
   operation: () => Promise<T>,
   options: RetryOptions = {}
@@ -94,9 +91,6 @@ export async function withRetry<T>(
   throw lastError;
 }
 
-/**
- * Ping Redis with retry logic, mirroring database connection verification.
- */
 export async function pingWithRetry(
   maxRetries = config.REDIS_MAX_RETRIES ?? 3,
   retryDelayMs = 1000
@@ -135,9 +129,6 @@ export interface RateLimitResult {
   retryAfter: number;
 }
 
-/**
- * Production-grade atomic rate limiter with TTL enforcement, retry logic, and fail-open resilience.
- */
 export async function rateLimit({
   key,
   limit,

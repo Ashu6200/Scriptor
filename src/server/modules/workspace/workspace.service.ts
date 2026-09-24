@@ -108,13 +108,34 @@ export class WorkspaceService extends BaseService {
         return typeof cached === "string" ? JSON.parse(cached) : cached;
       }
 
-      const workspaces = await prisma.workspace.findMany({
-        where: { ownerId: userId },
-        orderBy: { createdAt: "desc" },
-      });
+      const [workspaces, user] = await Promise.all([
+        prisma.workspace.findMany({
+          where: { ownerId: userId },
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            type: true,
+            logoUrl: true,
+            createdAt: true,
+            updatedAt: true,
+          },
+        }),
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { pinnedWorkspaceIds: true },
+        }),
+      ]);
 
-      await redis.set(cacheKey, JSON.stringify(workspaces), { ex: 1800 });
-      return workspaces;
+      const pinnedIds = new Set(user?.pinnedWorkspaceIds ?? []);
+      const enriched = workspaces.map((ws) => ({
+        ...ws,
+        isPinned: pinnedIds.has(ws.id),
+      }));
+
+      await redis.set(cacheKey, JSON.stringify(enriched), { ex: 1800 });
+      return enriched;
     } catch (error) {
       this.handleError(error, "Failed to fetch user workspaces");
     }

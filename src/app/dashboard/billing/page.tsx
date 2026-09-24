@@ -13,17 +13,19 @@ export default function BillingPage() {
   const { data: workspaces = [], isLoading: wsLoading, isError: wsError } = useGetWorkspacesQuery();
   const workspaceId = workspaces[0]?.id;
 
+  const effectiveWsId = workspaceId ?? "all";
+
   const {
     data: subscription,
     isLoading: subLoading,
     isError: subError,
-  } = useGetSubscriptionQuery(workspaceId!, { skip: !workspaceId });
+  } = useGetSubscriptionQuery(effectiveWsId);
 
   const {
     data: historyData,
     isLoading: histLoading,
     isError: histError,
-  } = useGetBillingHistoryQuery(workspaceId!, { skip: !workspaceId });
+  } = useGetBillingHistoryQuery(effectiveWsId);
 
   if (wsLoading) {
     return (

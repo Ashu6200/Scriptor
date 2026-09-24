@@ -242,7 +242,9 @@ function WorkspaceTreeSection({
   const router = useRouter();
   const { state, isMobile } = useSidebar();
   const isCollapsed = state === "collapsed" && !isMobile;
-  const { data: tree, isLoading } = useGetDocumentTreeQuery(workspace.id);
+  const { data: tree, isLoading } = useGetDocumentTreeQuery(workspace.id, {
+    skip: isCollapsed,
+  });
   const [createDoc] = useCreateDocumentMutation();
 
   const handleCreateDoc = async (e: React.MouseEvent) => {

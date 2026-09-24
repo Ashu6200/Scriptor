@@ -66,11 +66,13 @@ export default function DocumentsPage() {
     workspaceId: activeWsId,
     authorId: profile?.id,
   });
-  const { data: tree } = useGetDocumentTreeQuery(activeWsId);
+  const [viewMode, setViewMode] = useState<"grid" | "tree">("grid");
+  const { data: tree } = useGetDocumentTreeQuery(activeWsId, {
+    skip: viewMode !== "tree" || activeWsId === "all",
+  });
   const [createDocument] = useCreateDocumentMutation();
   const [showCreateDoc, setShowCreateDoc] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [viewMode, setViewMode] = useState<"grid" | "tree">("grid");
 
   const form = useForm<z.infer<typeof createDocSchema>>({
     resolver: zodResolver(createDocSchema),

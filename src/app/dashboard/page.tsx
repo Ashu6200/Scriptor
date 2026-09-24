@@ -2,25 +2,18 @@
 
 import { WelcomeModal } from "@/components/onboarding/WelcomeModal";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { useGetDocumentsQuery } from "@/features/document/api";
-import { useGetProfileQuery } from "@/features/user/api";
-import { useGetWorkspacesQuery } from "@/features/workspace/api";
+import { useGetDashboardStatsQuery } from "@/features/dashboard/api";
 import { Activity, BookOpen, FileText, LayoutGrid, TrendingUp } from "lucide-react";
 
 const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function DashboardPage() {
-  const { data: workspaces = [], isLoading: wsLoading } = useGetWorkspacesQuery();
-  const { data: profile } = useGetProfileQuery();
-  const primaryWorkspaceId = workspaces[0]?.id;
-  const { data: docsData, isLoading: docsLoading } = useGetDocumentsQuery(
-    { workspaceId: primaryWorkspaceId ?? "all", authorId: profile?.id },
-    { skip: !primaryWorkspaceId }
-  );
+  const { data, isLoading } = useGetDashboardStatsQuery();
 
-  const totalDocs = docsData?.data?.length ?? 0;
-  const totalWorkspaces = workspaces.length;
-  const isLoading = wsLoading || docsLoading;
+  const totalDocs = data?.totalDocs ?? 0;
+  const totalWorkspaces = data?.totalWorkspaces ?? 0;
+  const subscriptionPlan = data?.subscriptionPlan;
+  const platformRole = data?.platformRole;
 
   return (
     <div className="flex flex-col gap-6 p-4 lg:p-6">
@@ -58,7 +51,7 @@ export default function DashboardPage() {
               <LayoutGrid className="h-4 w-4 text-primary" />
             </div>
           </div>
-          {wsLoading ? (
+          {isLoading ? (
             <div className="h-8 w-10 bg-muted animate-pulse rounded" />
           ) : (
             <p className="text-2xl lg:text-3xl font-bold font-mono text-foreground leading-none">
@@ -135,19 +128,19 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2.5">
               <span className="text-xs text-muted-foreground">Workspaces</span>
               <span className="text-sm font-bold font-mono text-foreground">
-                {wsLoading ? "—" : totalWorkspaces}
+                {isLoading ? "—" : totalWorkspaces}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2.5">
               <span className="text-xs text-muted-foreground">Plan</span>
               <span className="text-sm font-bold font-mono text-foreground capitalize">
-                {profile?.subscriptionPlan ?? "—"}
+                {subscriptionPlan ?? "—"}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2.5">
               <span className="text-xs text-muted-foreground">Role</span>
               <span className="text-sm font-bold font-mono text-foreground capitalize">
-                {profile?.platformRole?.toLowerCase() ?? "—"}
+                {platformRole?.toLowerCase() ?? "—"}
               </span>
             </div>
           </div>
