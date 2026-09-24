@@ -29,6 +29,11 @@ export const auth = betterAuth({
         defaultValue: "USER",
         input: false,
       },
+      agreedToTermsAt: {
+        type: "date",
+        defaultValue: null,
+        input: false,
+      },
     },
   },
   secret: config.BETTER_AUTH_SECRET,
@@ -133,6 +138,42 @@ export const auth = betterAuth({
   },
 
   databaseHooks: {
+    user: {
+      create: {
+        after: async (user: { id: string }) => {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { agreedToTermsAt: new Date() },
+          });
+
+          // Record DPDP consent event for Terms of Service acceptance
+          const tosPolicy = await prisma.dpdpPolicy.findUnique({
+            where: { key: "terms-of-service" },
+            include: {
+              versions: {
+                where: { status: "PUBLISHED" },
+                orderBy: { version: "desc" },
+                take: 1,
+              },
+            },
+          });
+          const tosVersion = tosPolicy?.versions[0];
+          if (tosPolicy && tosVersion) {
+            await prisma.dpdpConsentEvent.create({
+              data: {
+                userId: user.id,
+                policyId: tosPolicy.id,
+                policyVersionId: tosVersion.id,
+                purpose: tosVersion.purpose,
+                status: "GRANTED",
+                consentMethod: "web_form",
+                source: "signup",
+              },
+            });
+          }
+        },
+      },
+    },
     session: {
       create: {
         before: async (session: { userId: string }) => {

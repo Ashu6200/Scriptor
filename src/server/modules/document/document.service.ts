@@ -14,6 +14,33 @@ import type {
 
 const log = logger.child("DocumentService");
 const CACHE_TTL = 3600;
+const TREE_CACHE_TTL = 60;
+
+const docListSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  tags: true,
+  visibility: true,
+  isPublished: true,
+  parentId: true,
+  workspaceId: true,
+  authorId: true,
+  order: true,
+  readingTime: true,
+  createdAt: true,
+  updatedAt: true,
+  deletedAt: true,
+} as const;
+
+const treeNodeSelect = {
+  id: true,
+  title: true,
+  slug: true,
+  order: true,
+  updatedAt: true,
+  workspaceId: true,
+} as const;
 
 const notDeleted: Prisma.DocumentWhereInput = {
   OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }],
@@ -152,6 +179,8 @@ export class DocumentService extends BaseService {
         }
       }
 
+      void redis.del(`tree:${data.workspaceId}`).catch(() => {});
+
       void auditService.logAction({
         action: "CREATE",
         resourceType: "Document",
@@ -207,7 +236,7 @@ export class DocumentService extends BaseService {
         return doc;
       });
 
-      await redis.del(`doc:${id}`);
+      await Promise.all([redis.del(`doc:${id}`), redis.del(`tree:${document.workspaceId}`)]);
 
       void auditService.logAction({
         action: "UPDATE",
@@ -246,7 +275,7 @@ export class DocumentService extends BaseService {
         }),
       ]);
 
-      await redis.del(`doc:${id}`);
+      await Promise.all([redis.del(`doc:${id}`), redis.del(`tree:${document.workspaceId}`)]);
 
       void auditService.logAction({
         action: "DELETE",
@@ -275,14 +304,25 @@ export class DocumentService extends BaseService {
         });
       }
 
-      return await prisma.document.findMany({
+      const cacheKey = workspaceId && workspaceId !== "all" ? `tree:${workspaceId}` : null;
+      if (cacheKey) {
+        const cached = await redis.get<string>(cacheKey);
+        if (cached) {
+          return typeof cached === "string" ? JSON.parse(cached) : cached;
+        }
+      }
+
+      const tree = await prisma.document.findMany({
         where: { AND: conditions },
-        include: {
+        select: {
+          ...treeNodeSelect,
           children: {
             where: notDeleted,
-            include: {
+            select: {
+              ...treeNodeSelect,
               children: {
                 where: notDeleted,
+                select: treeNodeSelect,
                 orderBy: { order: "asc" },
               },
             },
@@ -291,6 +331,12 @@ export class DocumentService extends BaseService {
         },
         orderBy: { order: "asc" },
       });
+
+      if (cacheKey) {
+        await redis.set(cacheKey, JSON.stringify(tree), { ex: TREE_CACHE_TTL });
+      }
+
+      return tree;
     } catch (error) {
       this.handleError(error, "Failed to fetch document tree");
     }
@@ -337,7 +383,8 @@ export class DocumentService extends BaseService {
         },
         {
           where: { AND: conditions },
-          include: {
+          select: {
+            ...docListSelect,
             author: {
               select: { id: true, name: true, image: true },
             },
@@ -401,16 +448,11 @@ export class DocumentService extends BaseService {
 
       return await prisma.document.findMany({
         where: { AND: conditions },
-        include: {
-          author: {
-            select: { id: true, name: true, image: true },
-          },
-          parent: {
-            select: { id: true, title: true },
-          },
-          workspace: {
-            select: { id: true, name: true, slug: true },
-          },
+        select: {
+          ...docListSelect,
+          author: { select: { id: true, name: true, image: true } },
+          parent: { select: { id: true, title: true } },
+          workspace: { select: { id: true, name: true, slug: true } },
         },
         orderBy: { deletedAt: "desc" },
       });
@@ -454,7 +496,7 @@ export class DocumentService extends BaseService {
         }),
       ]);
 
-      await redis.del(`doc:${id}`);
+      await Promise.all([redis.del(`doc:${id}`), redis.del(`tree:${document.workspaceId}`)]);
 
       void auditService.logAction({
         action: "UPDATE",
@@ -493,7 +535,7 @@ export class DocumentService extends BaseService {
         await tx.document.delete({ where: { id } });
       });
 
-      await redis.del(`doc:${id}`);
+      await Promise.all([redis.del(`doc:${id}`), redis.del(`tree:${document.workspaceId}`)]);
 
       void auditService.logAction({
         action: "DELETE",
@@ -532,9 +574,10 @@ export class DocumentService extends BaseService {
         await tx.document.deleteMany({ where: { id: { in: docIds } } });
       });
 
-      for (const docId of docIds) {
-        await redis.del(`doc:${docId}`);
-      }
+      await Promise.all([
+        ...docIds.map((docId) => redis.del(`doc:${docId}`)),
+        redis.del(`tree:${workspaceId}`),
+      ]);
 
       void auditService.logAction({
         action: "DELETE",
@@ -569,42 +612,30 @@ export class DocumentService extends BaseService {
         throw new NotFoundError("Workspace", workspaceSlug);
       }
 
-      const document = await prisma.document.findFirst({
-        where: {
-          workspaceId: workspace.id,
-          slug: documentSlug,
-          AND: [notDeleted],
-          OR: [{ visibility: "PUBLIC" }, { isPublished: true }],
-        },
-        include: {
-          author: {
-            select: { id: true, name: true, image: true },
+      const publicFilter = {
+        workspaceId: workspace.id,
+        AND: [notDeleted],
+        OR: [{ visibility: "PUBLIC" as const }, { isPublished: true }],
+      };
+
+      const [document, publicDocs] = await Promise.all([
+        prisma.document.findFirst({
+          where: { ...publicFilter, slug: documentSlug },
+          include: {
+            author: { select: { id: true, name: true, image: true } },
+            parent: { select: { id: true, title: true, slug: true } },
           },
-          parent: {
-            select: { id: true, title: true, slug: true },
-          },
-        },
-      });
+        }),
+        prisma.document.findMany({
+          where: publicFilter,
+          select: { id: true, title: true, slug: true, parentId: true, order: true },
+          orderBy: { order: "asc" },
+        }),
+      ]);
 
       if (!document) {
         throw new NotFoundError("Public Document", documentSlug);
       }
-
-      const publicDocs = await prisma.document.findMany({
-        where: {
-          workspaceId: workspace.id,
-          AND: [notDeleted],
-          OR: [{ visibility: "PUBLIC" }, { isPublished: true }],
-        },
-        select: {
-          id: true,
-          title: true,
-          slug: true,
-          parentId: true,
-          order: true,
-        },
-        orderBy: { order: "asc" },
-      });
 
       return {
         workspace,

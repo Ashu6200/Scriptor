@@ -1,5 +1,6 @@
 "use client";
 
+import { ConsentGateModal } from "@/components/consent/ConsentGateModal";
 import { CommandPalette } from "@/components/search/CommandPalette";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -39,6 +40,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider delay={0}>
       <SidebarProvider defaultOpen={!isDocumentsPath}>
+        <ConsentGateModal />
         <CommandPalette />
         <Sidebar />
         <SidebarInset className="min-w-0">

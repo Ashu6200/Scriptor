@@ -41,13 +41,13 @@ export async function seedDpdpPolicies() {
         status: "PUBLISHED" as const,
         publishedAt: new Date(),
         effectiveFrom: new Date(),
-        content: `# CodeVault Core Privacy & Data Processing Policy
+        content: `# Scriptor Privacy Policy & Security Practices
 
-**Effective Date:** 24 September 2026  
+**Effective Date:** 24 September 2026
 **Version:** 1.0 (DPDP Act, 2023 Compliant)
 
 ## 1. Introduction and Scope
-CodeVault ("we", "us", or "our") is dedicated to safeguarding your personal data in strict compliance with the Digital Personal Data Protection Act, 2023 (DPDP Act). This Core Policy outlines how we collect, process, and protect your digital personal data when you interact with our platform.
+Scriptor ("we", "us", or "our") is dedicated to safeguarding your personal data in strict compliance with the Digital Personal Data Protection Act, 2023 (DPDP Act). This policy outlines how we collect, process, and protect your digital personal data when you interact with our platform.
 
 ## 2. Grounds for Processing
 Under Section 4 and Section 7 of the DPDP Act, 2023, your personal data is processed for specified, necessary operational purposes:
@@ -73,8 +73,54 @@ As a Data Principal under the DPDP Act, 2023, you hold the following statutory r
 
 ## 6. Contact and Grievance Officer
 For any questions or grievances regarding this policy:
-- **Email:** privacy@codevault.com
-- **Grievance Redressal:** Available via the Admin Compliance Portal.`,
+- **Email:** privacy@scriptor.app
+- **Grievance Redressal:** Available via your account's Privacy Settings.
+
+---
+
+## Security Practices
+
+### 1. Our Commitment
+Security is a first-class concern at Scriptor. We design our systems to protect your documents, credentials, and personal data from unauthorised access, modification, or disclosure.
+
+### 2. Data Encryption
+- **In transit** — all traffic between your browser and Scriptor is encrypted using TLS 1.2 or higher. We enforce HTTPS and use HSTS headers to prevent downgrade attacks.
+- **At rest** — data stored in our database and file storage is encrypted at rest using AES-256 encryption provided by the underlying cloud infrastructure.
+
+### 3. Authentication
+- **Password hashing** — passwords are hashed using bcrypt with a per-user salt before storage. Plaintext passwords are never logged or stored.
+- **Session security** — session tokens are cryptographically random, short-lived, and rotated on each login. Sessions are invalidated immediately on logout or account deletion.
+- **OAuth** — when you sign in via an OAuth provider (e.g. Google), we receive only the minimal profile information needed (name, email, avatar). We never receive or store your OAuth provider's password.
+
+### 4. Access Controls
+- **Workspace isolation** — all data is strictly scoped to workspaces. Members of workspace A cannot access any data from workspace B.
+- **Role-based permissions** — workspaces have two roles: Admin and Member. Admins can manage membership and settings; members can only read and write documents they have access to.
+- **Admin action logging** — all administrative actions (membership changes, role changes, policy changes) are recorded in the immutable audit log.
+
+### 5. Audit Logs
+Scriptor maintains an immutable audit trail covering:
+- Document creation, modification, and deletion events
+- Workspace membership and role changes
+- Consent decisions and policy changes (DPDP compliance)
+- Authentication events (logins, logouts, failed attempts)
+
+Audit records cannot be edited or deleted by workspace administrators. They are retained for two years and are available to workspace admins in the admin console.
+
+### 6. DPDP Compliance
+In accordance with the Digital Personal Data Protection (DPDP) Act, 2023:
+- We collect only the personal data that is strictly necessary for each stated purpose (data minimisation).
+- Consent is captured through our built-in consent management system before any optional processing begins.
+- Retention periods are enforced per data category as described in this Privacy Policy.
+
+### 7. Responsible Disclosure
+If you discover a security vulnerability in Scriptor, we ask that you report it responsibly:
+- Email security@scriptor.app with a clear description of the issue, steps to reproduce, and potential impact.
+- We aim to acknowledge your report within **48 hours**.
+- Please do not publicly disclose the vulnerability until we have had a reasonable opportunity to investigate and remediate it.
+- We do not currently operate a bug-bounty programme, but we will credit researchers in our release notes when a fix is shipped.
+
+### 8. Contact
+For security-related enquiries, contact us at security@scriptor.app.`,
       },
     },
     {
@@ -209,6 +255,26 @@ CodeVault provides optional AI-assisted writing, code analysis, and document sum
 
 ## 4. Voluntary Consent
 - AI features are entirely optional. If you reject or withdraw consent, the AI Assistant modal will remain disabled, and none of your document data will be transmitted to AI processors.`,
+      },
+    },
+    {
+      key: "terms-of-service",
+      name: "Terms of Service",
+      description:
+        "Acceptance of Scriptor Terms of Service is required to create and use an account.",
+      status: "PUBLISHED" as const,
+      version: {
+        version: 1,
+        purpose: "Record user acceptance of the Terms of Service at account creation.",
+        dataCategories: ["Account Data", "Acceptance Timestamp"],
+        processingDescription:
+          "We record the date and time you agreed to our Terms of Service when creating your account. This record is retained for 5 years for legal compliance.",
+        retentionPeriod: "5 years from account creation.",
+        consentRequired: false,
+        status: "PUBLISHED" as const,
+        publishedAt: new Date(),
+        effectiveFrom: new Date(),
+        content: "",
       },
     },
     {
@@ -347,7 +413,9 @@ Webhooks can be paused, modified, or permanently deleted by workspace owners at 
     include: { versions: { where: { status: "PUBLISHED" } } },
   });
 
-  console.log(`Seeding consent events for ${allUsers.length} users on ${publishedPolicies.length} published policies...`);
+  console.log(
+    `Seeding consent events for ${allUsers.length} users on ${publishedPolicies.length} published policies...`
+  );
 
   for (const user of allUsers) {
     for (const policy of publishedPolicies) {
@@ -361,11 +429,7 @@ Webhooks can be paused, modified, or permanently deleted by workspace owners at 
       if (!existingEvent) {
         // If essential (not optional), grant
         const isEssential = !v.consentRequired;
-        const status = isEssential
-          ? "GRANTED"
-          : user.email.includes("pro")
-          ? "GRANTED"
-          : "GRANTED";
+        const status = isEssential ? "GRANTED" : user.email.includes("pro") ? "GRANTED" : "GRANTED";
 
         const event = await prisma.dpdpConsentEvent.create({
           data: {
@@ -446,7 +510,7 @@ Webhooks can be paused, modified, or permanently deleted by workspace owners at 
 }
 
 // Self-run when executed directly
-if (require.main === module) {
+if (process.argv[1]?.endsWith("seed-dpdp-policies.ts")) {
   seedDpdpPolicies()
     .catch((err) => {
       console.error("Error seeding DPDP policies:", err);

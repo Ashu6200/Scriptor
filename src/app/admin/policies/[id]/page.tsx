@@ -1,13 +1,14 @@
 "use client";
 
 import {
+  useArchivePolicyMutation,
   useGetPolicyQuery,
   usePublishPolicyMutation,
-  useArchivePolicyMutation,
 } from "@/features/dpdp/api";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import {
+  AlertTriangle,
   Archive,
   ArrowLeft,
   Calendar,
@@ -136,6 +137,26 @@ export default function PolicyDetailPage({ params }: { params: Promise<{ id: str
         )}
       </div>
 
+      {/* DRAFT banner */}
+      {policy.status === "DRAFT" && (
+        <div className="flex items-center justify-between gap-4 rounded-xl border border-amber-500/40 bg-amber-500/10 px-5 py-3.5">
+          <div className="flex items-center gap-3">
+            <AlertTriangle className="h-4 w-4 text-amber-500 shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-400">
+              <span className="font-semibold">This policy is a DRAFT</span> — users cannot see it
+              yet. Publish it to activate the consent gate.
+            </p>
+          </div>
+          <button
+            onClick={handlePublish}
+            className="shrink-0 inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition-all"
+          >
+            <Rocket className="h-3.5 w-3.5" />
+            Publish Now
+          </button>
+        </div>
+      )}
+
       {/* Policy Info Grid */}
       <div className="grid grid-cols-2 gap-4">
         <div className="rounded-xl border border-border bg-card p-5 space-y-3">
@@ -182,9 +203,11 @@ export default function PolicyDetailPage({ params }: { params: Promise<{ id: str
                 </span>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">Consent Required</p>
+                <p className="text-xs text-muted-foreground">Policy Type</p>
                 <p className="text-sm text-foreground">
-                  {latestVersion.consentRequired ? "Yes (Optional)" : "No (Essential)"}
+                  {latestVersion.consentRequired
+                    ? "Optional — user can accept or decline"
+                    : "Essential — required to use the service"}
                 </p>
               </div>
               {latestVersion.publishedAt && (

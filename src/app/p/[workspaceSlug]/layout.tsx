@@ -32,8 +32,10 @@ export default async function PublicDocsLayout({ children, params }: PublicLayou
   const publishedDocs = await prisma.document.findMany({
     where: {
       workspaceId: workspace.id,
-      deletedAt: null,
-      OR: [{ visibility: "PUBLIC" }, { isPublished: true }],
+      AND: [
+        { OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }] },
+        { OR: [{ visibility: "PUBLIC" }, { isPublished: true }] },
+      ],
     },
     select: {
       id: true,

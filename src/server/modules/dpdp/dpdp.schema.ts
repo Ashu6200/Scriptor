@@ -60,7 +60,11 @@ export type GrantConsentInput = z.infer<typeof grantConsentSchema>;
 
 export const listUserConsentHistorySchema = z.object({
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(50),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
+  status: z.enum(["GRANTED", "REJECTED", "WITHDRAWN", "PENDING"]).optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
+  search: z.string().max(100).optional(),
 });
 export type ListUserConsentHistoryQuery = z.infer<typeof listUserConsentHistorySchema>;
 

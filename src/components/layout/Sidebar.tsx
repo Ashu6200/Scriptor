@@ -1,6 +1,5 @@
 "use client";
 
-import { toast } from "sonner";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -59,12 +58,14 @@ import {
   Search,
   Settings,
   Shield,
+  ShieldCheck,
   Trash2,
   Users,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect } from "react";
+import { toast } from "sonner";
 import { BottomDrawer } from "../ui/bottom-drawer";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -86,6 +87,7 @@ const bottomNavItems: SidebarItemProps[] = [
   { name: "Billing", href: "/dashboard/billing", icon: CreditCard },
   { name: "Notifications", href: "/dashboard/notifications", icon: Bell },
   { name: "Audit Log", href: "/dashboard/audit", icon: Shield },
+  { name: "Privacy & Consents", href: "/dashboard/consents", icon: ShieldCheck },
   { name: "Trash", href: "/dashboard/trash", icon: Trash2 },
   { name: "Settings", href: "/dashboard/settings", icon: Settings },
 ];
@@ -252,7 +254,8 @@ function WorkspaceTreeSection({
       const errorObj = err as { status?: number; data?: { message?: string } };
       if (errorObj?.status === 402) {
         toast.error(
-          errorObj.data?.message || "Document limit reached. Upgrade to Pro for unlimited documents.",
+          errorObj.data?.message ||
+            "Document limit reached. Upgrade to Pro for unlimited documents.",
           {
             action: {
               label: "Upgrade",

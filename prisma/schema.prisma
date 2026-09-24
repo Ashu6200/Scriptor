@@ -89,6 +89,7 @@ model User {
   sessions Session[]
 
   platformRole       PlatformRole @default(USER)
+  agreedToTermsAt    DateTime?
   pinnedWorkspaceIds String[]
 
   razorpayCustomerId     String?
@@ -303,6 +304,7 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@index([workspaceId])
+  @@index([workspaceId, createdAt])
   @@index([actorId])
   @@index([action])
   @@index([resourceType, resourceId])
@@ -555,6 +557,7 @@ model DpdpConsentEvent {
 
   @@index([userId])
   @@index([userId, policyId])
+  @@index([userId, createdAt])
   @@index([policyId])
   @@index([policyVersionId])
   @@index([createdAt])

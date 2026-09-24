@@ -22,8 +22,10 @@ export default async function PublicWorkspaceIndexPage({ params }: PublicWorkspa
   const firstDoc = await prisma.document.findFirst({
     where: {
       workspaceId: workspace.id,
-      deletedAt: null,
-      OR: [{ visibility: "PUBLIC" }, { isPublished: true }],
+      AND: [
+        { OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }] },
+        { OR: [{ visibility: "PUBLIC" }, { isPublished: true }] },
+      ],
     },
     orderBy: { order: "asc" },
     select: { slug: true },

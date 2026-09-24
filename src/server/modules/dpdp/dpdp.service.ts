@@ -113,7 +113,11 @@ export class DpdpService extends BaseService {
   async listPolicies(query: ListPoliciesQuery) {
     try {
       const where: Prisma.DpdpPolicyWhereInput = {
-        deletedAt: null,
+        AND: [
+          {
+            OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }],
+          },
+        ],
       };
 
       if (query.status) {
@@ -121,11 +125,13 @@ export class DpdpService extends BaseService {
       }
 
       if (query.search) {
-        where.OR = [
-          { name: { contains: query.search, mode: "insensitive" } },
-          { key: { contains: query.search, mode: "insensitive" } },
-          { description: { contains: query.search, mode: "insensitive" } },
-        ];
+        (where.AND as Prisma.DpdpPolicyWhereInput[]).push({
+          OR: [
+            { name: { contains: query.search, mode: "insensitive" } },
+            { key: { contains: query.search, mode: "insensitive" } },
+            { description: { contains: query.search, mode: "insensitive" } },
+          ],
+        });
       }
 
       return await this.paginate(
@@ -409,17 +415,16 @@ export class DpdpService extends BaseService {
 
   async getPolicyVersions(policyId: string) {
     try {
-      const policy = await prisma.dpdpPolicy.findUnique({ where: { id: policyId } });
+      const policy = await prisma.dpdpPolicy.findUnique({
+        where: { id: policyId },
+        include: { versions: { orderBy: { version: "desc" } } },
+      });
       if (!policy || policy.deletedAt) {
         throw new NotFoundError("Policy", policyId);
       }
 
-      const versions = await prisma.dpdpPolicyVersion.findMany({
-        where: { policyId },
-        orderBy: { version: "desc" },
-      });
-
-      return { policy, versions };
+      const { versions, ...policyData } = policy;
+      return { policy: policyData, versions };
     } catch (error) {
       this.handleError(error, "Failed to get policy versions");
     }
@@ -430,7 +435,7 @@ export class DpdpService extends BaseService {
       const policies = await prisma.dpdpPolicy.findMany({
         where: {
           status: "PUBLISHED",
-          deletedAt: null,
+          OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }],
         },
         include: {
           versions: {
@@ -590,24 +595,27 @@ export class DpdpService extends BaseService {
 
   async getUserCurrentConsents(userId: string) {
     try {
-      const policies = await prisma.dpdpPolicy.findMany({
-        where: {
-          deletedAt: null,
-          OR: [{ status: "PUBLISHED" }, { consentEvents: { some: { userId } } }],
-        },
-        include: {
-          versions: {
-            where: { status: { in: ["PUBLISHED", "ARCHIVED"] } },
-            orderBy: { version: "desc" },
-            take: 1,
+      const [policies, consentEvents] = await Promise.all([
+        prisma.dpdpPolicy.findMany({
+          where: {
+            AND: [
+              { OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }] },
+              { OR: [{ status: "PUBLISHED" }, { consentEvents: { some: { userId } } }] },
+            ],
           },
-        },
-      });
-
-      const consentEvents = await prisma.dpdpConsentEvent.findMany({
-        where: { userId },
-        orderBy: { createdAt: "desc" },
-      });
+          include: {
+            versions: {
+              where: { status: { in: ["PUBLISHED", "ARCHIVED"] } },
+              orderBy: { version: "desc" },
+              take: 1,
+            },
+          },
+        }),
+        prisma.dpdpConsentEvent.findMany({
+          where: { userId },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
 
       const latestConsentByPolicy = new Map<string, (typeof consentEvents)[0]>();
       for (const event of consentEvents) {
@@ -658,11 +666,29 @@ export class DpdpService extends BaseService {
 
   async getUserConsentHistory(userId: string, query: ListUserConsentHistoryQuery) {
     try {
+      const where: Prisma.DpdpConsentEventWhereInput = { userId };
+
+      if (query.status) where.status = query.status as DpdpConsentStatus;
+      if (query.from || query.to) {
+        where.createdAt = {
+          ...(query.from && { gte: new Date(query.from) }),
+          ...(query.to && { lte: new Date(query.to) }),
+        };
+      }
+      if (query.search) {
+        where.policy = {
+          OR: [
+            { name: { contains: query.search, mode: "insensitive" } },
+            { key: { contains: query.search, mode: "insensitive" } },
+          ],
+        };
+      }
+
       return await this.paginate(
         prisma.dpdpConsentEvent,
         { page: query.page, limit: query.limit },
         {
-          where: { userId },
+          where,
           include: {
             policy: { select: { id: true, key: true, name: true } },
             policyVersion: { select: { id: true, version: true, purpose: true } },
@@ -677,23 +703,24 @@ export class DpdpService extends BaseService {
 
   async getAdminConsentsByUser(userId: string) {
     try {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { id: true, email: true, name: true },
-      });
+      const [user, events] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { id: true, email: true, name: true },
+        }),
+        prisma.dpdpConsentEvent.findMany({
+          where: { userId },
+          include: {
+            policy: { select: { id: true, key: true, name: true } },
+            policyVersion: { select: { id: true, version: true, purpose: true } },
+          },
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
 
       if (!user) {
         throw new NotFoundError("User", userId);
       }
-
-      const events = await prisma.dpdpConsentEvent.findMany({
-        where: { userId },
-        include: {
-          policy: { select: { id: true, key: true, name: true } },
-          policyVersion: { select: { id: true, version: true, purpose: true } },
-        },
-        orderBy: { createdAt: "desc" },
-      });
 
       return { user, events };
     } catch (error) {

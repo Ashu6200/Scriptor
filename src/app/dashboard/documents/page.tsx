@@ -7,8 +7,15 @@ import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import { QuotaBanner } from "@/components/ui/QuotaBanner";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   type DocumentTreeItem,
   useCreateDocumentMutation,
@@ -18,6 +25,7 @@ import {
 import { useGetProfileQuery } from "@/features/user/api";
 import { useGetWorkspacesQuery } from "@/features/workspace/api";
 import { getPlanEntitlements } from "@/lib/client-entitlements";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDistanceToNow } from "date-fns";
 import {
   ChevronRight,
@@ -31,7 +39,13 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import * as z from "zod";
+
+const createDocSchema = z.object({
+  title: z.string().min(1, "Title is required").max(255, "Title too long"),
+});
 
 export default function DocumentsPage() {
   const {
@@ -56,8 +70,12 @@ export default function DocumentsPage() {
   const [createDocument] = useCreateDocumentMutation();
   const [showCreateDoc, setShowCreateDoc] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [docTitle, setDocTitle] = useState("Untitled Document");
   const [viewMode, setViewMode] = useState<"grid" | "tree">("grid");
+
+  const form = useForm<z.infer<typeof createDocSchema>>({
+    resolver: zodResolver(createDocSchema),
+    defaultValues: { title: "Untitled Document" },
+  });
 
   const isLoading = isLoadingWorkspaces || isLoadingDocuments;
   const documents = data?.data || [];
@@ -74,12 +92,15 @@ export default function DocumentsPage() {
     }
   };
 
-  const handleCreate = async () => {
-    if (!docTitle.trim() || !primaryWorkspace?.id) return;
+  const onCreateSubmit = async (values: z.infer<typeof createDocSchema>) => {
+    if (!primaryWorkspace?.id) return;
     try {
-      await createDocument({ workspaceId: primaryWorkspace.id, title: docTitle.trim() }).unwrap();
+      await createDocument({
+        workspaceId: primaryWorkspace.id,
+        title: values.title.trim(),
+      }).unwrap();
       toast.success("Document created.");
-      setDocTitle("Untitled Document");
+      form.reset({ title: "Untitled Document" });
       setShowCreateDoc(false);
     } catch (err: unknown) {
       const errorObj = err as { status?: number };
@@ -205,21 +226,30 @@ export default function DocumentsPage() {
         title="Create Document"
         description="Add a new document to your workspace."
         footer={
-          <Button onClick={handleCreate} disabled={!docTitle.trim()} className="w-full">
+          <Button onClick={form.handleSubmit(onCreateSubmit)} className="w-full">
             Create Document
           </Button>
         }
       >
-        <div className="space-y-2">
-          <Label htmlFor="doc-title">Document Title</Label>
-          <Input
-            id="doc-title"
-            placeholder="Untitled Document"
-            value={docTitle}
-            onChange={(e) => setDocTitle(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+        <Form {...form}>
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Document Title</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Untitled Document"
+                    onKeyDown={(e) => e.key === "Enter" && form.handleSubmit(onCreateSubmit)()}
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
-        </div>
+        </Form>
       </BottomDrawer>
 
       <UpgradeModal

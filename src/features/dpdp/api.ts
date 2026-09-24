@@ -123,13 +123,12 @@ export const dpdpApi = api.injectEndpoints({
     }),
 
     // ── Policy Versions ─────────────────────────────────────────────
-    getPolicyVersions: builder.query<
-      { policy: DpdpPolicy; versions: DpdpPolicyVersion[] },
-      string
-    >({
-      query: (id) => `/policies/${id}/versions`,
-      providesTags: (_res, _err, id) => [{ type: "Dpdp", id: `VERSIONS_${id}` }],
-    }),
+    getPolicyVersions: builder.query<{ policy: DpdpPolicy; versions: DpdpPolicyVersion[] }, string>(
+      {
+        query: (id) => `/policies/${id}/versions`,
+        providesTags: (_res, _err, id) => [{ type: "Dpdp", id: `VERSIONS_${id}` }],
+      }
+    ),
 
     createPolicyVersion: builder.mutation<
       DpdpPolicyVersion,
@@ -189,7 +188,10 @@ export const dpdpApi = api.injectEndpoints({
       }
     >({
       query: (body) => ({ url: "/me/consents", method: "POST", body }),
-      invalidatesTags: [{ type: "Dpdp", id: "MY_CONSENTS" }, { type: "Dpdp", id: "MY_HISTORY" }],
+      invalidatesTags: [
+        { type: "Dpdp", id: "MY_CONSENTS" },
+        { type: "Dpdp", id: "MY_HISTORY" },
+      ],
     }),
 
     withdrawConsent: builder.mutation<DpdpConsentEvent, string>({
@@ -197,12 +199,22 @@ export const dpdpApi = api.injectEndpoints({
         url: `/me/consents/${policyId}/withdraw`,
         method: "POST",
       }),
-      invalidatesTags: [{ type: "Dpdp", id: "MY_CONSENTS" }, { type: "Dpdp", id: "MY_HISTORY" }],
+      invalidatesTags: [
+        { type: "Dpdp", id: "MY_CONSENTS" },
+        { type: "Dpdp", id: "MY_HISTORY" },
+      ],
     }),
 
     getUserConsentHistory: builder.query<
       PaginatedResponse<DpdpConsentEvent>,
-      { page?: number; limit?: number }
+      {
+        page?: number;
+        limit?: number;
+        status?: string;
+        from?: string;
+        to?: string;
+        search?: string;
+      }
     >({
       query: (params) => ({ url: "/me/consents/history", params }),
       providesTags: [{ type: "Dpdp", id: "MY_HISTORY" }],

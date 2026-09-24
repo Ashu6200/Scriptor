@@ -150,14 +150,12 @@ export class WorkspaceService extends BaseService {
 
       log.info(`Workspace updated: ${workspace.id}`);
 
-      await redis.del(`ws:${id}`).catch(() => {});
-      if (current?.slug) {
-        await redis.del(`ws:slug:${current.slug}`).catch(() => {});
-      }
-      if (workspace.slug) {
-        await redis.del(`ws:slug:${workspace.slug}`).catch(() => {});
-      }
-      await redis.del(`user:workspaces:${workspace.ownerId}`).catch(() => {});
+      await Promise.all([
+        redis.del(`ws:${id}`).catch(() => {}),
+        current?.slug ? redis.del(`ws:slug:${current.slug}`).catch(() => {}) : Promise.resolve(),
+        workspace.slug ? redis.del(`ws:slug:${workspace.slug}`).catch(() => {}) : Promise.resolve(),
+        redis.del(`user:workspaces:${workspace.ownerId}`).catch(() => {}),
+      ]);
 
       return workspace;
     } catch (error) {
@@ -320,14 +318,13 @@ export class WorkspaceService extends BaseService {
         await tx.workspace.delete({ where: { id } });
       });
 
-      for (const docId of deletedDocIds) {
-        await redis.del(`doc:${docId}`).catch(() => {});
-      }
-      await redis.del(`ws:${id}`).catch(() => {});
-      if (workspace.slug) {
-        await redis.del(`ws:slug:${workspace.slug}`).catch(() => {});
-      }
-      await redis.del(`user:workspaces:${actorId}`).catch(() => {});
+      await Promise.all([
+        ...deletedDocIds.map((docId) => redis.del(`doc:${docId}`).catch(() => {})),
+        redis.del(`ws:${id}`).catch(() => {}),
+        workspace.slug ? redis.del(`ws:slug:${workspace.slug}`).catch(() => {}) : Promise.resolve(),
+        redis.del(`user:workspaces:${actorId}`).catch(() => {}),
+        redis.del(`tree:${id}`).catch(() => {}),
+      ]);
 
       log.info(`Workspace deleted: ${id}`);
 

@@ -1,8 +1,9 @@
 "use client";
 
+import { UpgradeModal } from "@/components/modals/UpgradeModal";
+import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { Button } from "@/components/ui/button";
-import { UpgradeModal } from "@/components/modals/UpgradeModal";
 import {
   Dialog,
   DialogContent,
@@ -11,10 +12,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { ErrorBanner } from "@/components/ui/ErrorBanner";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import {
   type DocumentTreeItem,
   useCreateDocumentMutation,
@@ -32,6 +39,7 @@ import {
   useUpdateWorkspaceMutation,
 } from "@/features/workspace/api";
 import { cn } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Building2,
   ChevronRight,
@@ -45,19 +53,29 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memo, useCallback, useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import * as z from "zod";
+
+const wsNameSchema = z.object({
+  name: z.string().min(1, "Workspace name is required").max(100, "Name too long"),
+});
 
 export default function WorkspacesPage() {
   const { data: workspaces = [], isLoading, isError } = useGetWorkspacesQuery();
   const [createWorkspace] = useCreateWorkspaceMutation();
   const [showCreate, setShowCreate] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  const [name, setName] = useState("");
 
-  const handleCreate = async () => {
-    if (!name.trim()) return;
+  const createForm = useForm<z.infer<typeof wsNameSchema>>({
+    resolver: zodResolver(wsNameSchema),
+    defaultValues: { name: "" },
+  });
+
+  const onCreateSubmit = async (values: z.infer<typeof wsNameSchema>) => {
     try {
-      await createWorkspace({ name: name.trim() }).unwrap();
-      setName("");
+      await createWorkspace({ name: values.name.trim() }).unwrap();
+      createForm.reset();
       setShowCreate(false);
       toast.success("Workspace created.");
     } catch (err: unknown) {
@@ -114,21 +132,32 @@ export default function WorkspacesPage() {
           title="Create Workspace"
           description="Create a new personal workspace."
           footer={
-            <Button onClick={handleCreate} disabled={!name.trim()} className="w-full">
+            <Button onClick={createForm.handleSubmit(onCreateSubmit)} className="w-full">
               Create Workspace
             </Button>
           }
         >
-          <div className="space-y-2">
-            <Label htmlFor="ws-name">Workspace Name</Label>
-            <Input
-              id="ws-name"
-              placeholder="My Workspace"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleCreate()}
+          <Form {...createForm}>
+            <FormField
+              control={createForm.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Workspace Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="My Workspace"
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && createForm.handleSubmit(onCreateSubmit)()
+                      }
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
+          </Form>
         </BottomDrawer>
       )}
 
@@ -161,8 +190,12 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
   const [deleteDocument] = useDeleteDocumentMutation();
 
   const [showEditWs, setShowEditWs] = useState(false);
-  const [editWsName, setEditWsName] = useState(workspace.name);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const editWsForm = useForm<z.infer<typeof wsNameSchema>>({
+    resolver: zodResolver(wsNameSchema),
+    defaultValues: { name: workspace.name },
+  });
 
   const [editingDoc, setEditingDoc] = useState<{ id: string; title: string } | null>(null);
   const [editDocTitle, setEditDocTitle] = useState("");
@@ -175,7 +208,8 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
       const errorObj = err as { status?: number; data?: { message?: string } };
       if (errorObj?.status === 402) {
         toast.error(
-          errorObj.data?.message || "Document limit reached. Upgrade to Pro for unlimited documents.",
+          errorObj.data?.message ||
+            "Document limit reached. Upgrade to Pro for unlimited documents.",
           {
             action: {
               label: "Upgrade",
@@ -197,7 +231,8 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
         const errorObj = err as { status?: number; data?: { message?: string } };
         if (errorObj?.status === 402) {
           toast.error(
-            errorObj.data?.message || "Document limit reached. Upgrade to Pro for unlimited documents.",
+            errorObj.data?.message ||
+              "Document limit reached. Upgrade to Pro for unlimited documents.",
             {
               action: {
                 label: "Upgrade",
@@ -213,12 +248,12 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
     [createDoc, workspace.id, router]
   );
 
-  const handleEditWs = async () => {
-    if (!editWsName.trim() || editWsName.trim() === workspace.name) {
+  const onEditWsSubmit = async (values: z.infer<typeof wsNameSchema>) => {
+    if (values.name.trim() === workspace.name) {
       setShowEditWs(false);
       return;
     }
-    await updateWorkspace({ id: workspace.id, data: { name: editWsName.trim() } });
+    await updateWorkspace({ id: workspace.id, data: { name: values.name.trim() } });
     setShowEditWs(false);
   };
 
@@ -313,7 +348,7 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setEditWsName(workspace.name);
+                  editWsForm.reset({ name: workspace.name });
                   setShowEditWs(true);
                 }}
               >
@@ -365,20 +400,31 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
           onOpenChange={setShowEditWs}
           title="Rename Workspace"
           footer={
-            <Button onClick={handleEditWs} disabled={!editWsName.trim()} className="w-full">
+            <Button onClick={editWsForm.handleSubmit(onEditWsSubmit)} className="w-full">
               Save
             </Button>
           }
         >
-          <div className="space-y-2">
-            <Label htmlFor={`edit-ws-${workspace.id}`}>Workspace Name</Label>
-            <Input
-              id={`edit-ws-${workspace.id}`}
-              value={editWsName}
-              onChange={(e) => setEditWsName(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleEditWs()}
+          <Form {...editWsForm}>
+            <FormField
+              control={editWsForm.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Workspace Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      onKeyDown={(e) =>
+                        e.key === "Enter" && editWsForm.handleSubmit(onEditWsSubmit)()
+                      }
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-          </div>
+          </Form>
         </BottomDrawer>
       )}
 

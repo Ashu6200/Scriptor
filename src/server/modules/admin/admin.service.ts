@@ -3,7 +3,7 @@ import { AppError, NotFoundError } from "@core/errors";
 import { prisma } from "@infra/db";
 import { logger } from "@infra/logger";
 import { redis } from "@infra/redis";
-import type { Prisma, PaymentStatus, SubscriptionPlan } from "@prisma/client";
+import type { PaymentStatus, Prisma, SubscriptionPlan } from "@prisma/client";
 import type {
   AnalyticsQuery,
   ListTransactionsQuery,
@@ -16,6 +16,11 @@ const log = logger.child("AdminService");
 export class AdminService extends BaseService {
   async getMetrics() {
     try {
+      const cached = await redis.get<string>("admin:metrics");
+      if (cached) {
+        return typeof cached === "string" ? JSON.parse(cached) : cached;
+      }
+
       const notDeleted = { OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }] };
 
       const [
@@ -88,7 +93,7 @@ export class AdminService extends BaseService {
       const totalRefundedPaise = refundsAgg._sum.amount ?? 0;
       const netRevenuePaise = Math.max(0, totalCapturedPaise - totalRefundedPaise);
 
-      return {
+      const metrics = {
         totalUsers,
         totalWorkspaces,
         totalDocuments,
@@ -107,6 +112,9 @@ export class AdminService extends BaseService {
           failedPaymentsCount,
         },
       };
+
+      void redis.set("admin:metrics", JSON.stringify(metrics), { ex: 300 }).catch(() => {});
+      return metrics;
     } catch (error) {
       this.handleError(error, "Failed to fetch platform metrics");
     }
@@ -197,10 +205,12 @@ export class AdminService extends BaseService {
         where: { userId },
         select: { token: true },
       });
-      for (const session of sessions) {
-        await redis.del(`ba:session:${session.token}`).catch(() => {});
-        await redis.del(`session:me:${session.token}`).catch(() => {});
-      }
+      await Promise.all(
+        sessions.flatMap((s) => [
+          redis.del(`ba:session:${s.token}`).catch(() => {}),
+          redis.del(`session:me:${s.token}`).catch(() => {}),
+        ])
+      );
 
       log.info(`Platform role changed: ${userId} → ${role}`);
       return updated;
@@ -246,10 +256,12 @@ export class AdminService extends BaseService {
         where: { userId },
         select: { token: true },
       });
-      for (const session of sessions) {
-        await redis.del(`ba:session:${session.token}`).catch(() => {});
-        await redis.del(`session:me:${session.token}`).catch(() => {});
-      }
+      await Promise.all(
+        sessions.flatMap((s) => [
+          redis.del(`ba:session:${s.token}`).catch(() => {}),
+          redis.del(`session:me:${s.token}`).catch(() => {}),
+        ])
+      );
 
       await prisma.$transaction([
         prisma.user.update({
@@ -340,9 +352,7 @@ export class AdminService extends BaseService {
         where: { userId },
         select: { token: true },
       });
-      for (const session of sessions) {
-        await redis.del(`session:me:${session.token}`).catch(() => {});
-      }
+      await Promise.all(sessions.map((s) => redis.del(`session:me:${s.token}`).catch(() => {})));
 
       log.info(`Plan override: user ${userId} → ${plan}`);
       return updated;
@@ -427,6 +437,16 @@ export class AdminService extends BaseService {
 
   async getAnalytics(from: Date, to: Date) {
     try {
+      const today = new Date().toISOString().slice(0, 10);
+      const toKey = to.toISOString().slice(0, 10);
+      const analyticsKey = `admin:analytics:${from.toISOString().slice(0, 10)}:${toKey}`;
+      const analyticsTTL = toKey < today ? 1800 : 300;
+
+      const cached = await redis.get<string>(analyticsKey);
+      if (cached) {
+        return typeof cached === "string" ? JSON.parse(cached) : cached;
+      }
+
       const notDeleted = { OR: [{ deletedAt: null }, { deletedAt: { isSet: false } }] };
 
       const [capturedPayments, newUsers, subscriptionStatusData, paymentMethodData] =
@@ -501,7 +521,7 @@ export class AdminService extends BaseService {
         amountINR: Math.round((item._sum.amount ?? 0) / 100),
       }));
 
-      return {
+      const analytics = {
         revenueSeries,
         signupSeries,
         totalRevenueINR: revenueSeries.reduce((s, d) => s + d.value, 0),
@@ -510,6 +530,9 @@ export class AdminService extends BaseService {
         subscriptionStatus,
         paymentMethods,
       };
+
+      void redis.set(analyticsKey, JSON.stringify(analytics), { ex: analyticsTTL }).catch(() => {});
+      return analytics;
     } catch (error) {
       this.handleError(error, "Failed to fetch analytics");
     }

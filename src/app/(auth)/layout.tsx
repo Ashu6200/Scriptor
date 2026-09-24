@@ -4,7 +4,11 @@ import Image from "next/image";
 import Link from "next/link";
 import type React from "react";
 
-export default function AuthLayout({ children }: { children: React.ReactNode }) {
+export default function AuthLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <div className="min-h-screen w-full grid grid-cols-1 lg:grid-cols-12 bg-background">
       <div className="relative hidden lg:flex lg:col-span-5 xl:col-span-5 2xl:col-span-6 flex-col justify-between p-8 xl:p-12 overflow-hidden bg-zinc-950 text-white border-r border-border">
@@ -103,9 +107,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </Link>
             <Link href="/privacy" className="hover:text-foreground transition-colors">
               Privacy
-            </Link>
-            <Link href="/security" className="hover:text-foreground transition-colors">
-              Security
             </Link>
           </div>
         </footer>

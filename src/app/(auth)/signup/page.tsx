@@ -33,6 +33,7 @@ const signupSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
   email: z.string().email("Invalid email address"),
   password: z.string().min(8, "Password must be at least 8 characters"),
+  agreedToTerms: z.literal(true, { message: "You must agree to continue" }),
 });
 
 type SignupFormValues = z.infer<typeof signupSchema>;
@@ -56,7 +57,7 @@ export default function SignupPage() {
 
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
-    defaultValues: { name: "", email: "", password: "" },
+    defaultValues: { name: "", email: "", password: "", agreedToTerms: false as unknown as true },
   });
 
   const handleSocial = async (provider: "google" | "github") => {
@@ -258,6 +259,42 @@ export default function SignupPage() {
                           )}
                         </button>
                       </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="agreedToTerms"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <label className="flex items-start gap-2.5 cursor-pointer group">
+                        <input
+                          type="checkbox"
+                          checked={field.value === true}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          className="mt-0.5 h-4 w-4 rounded accent-primary cursor-pointer shrink-0"
+                        />
+                        <span className="text-xs text-muted-foreground leading-relaxed group-hover:text-foreground transition-colors">
+                          I agree to the{" "}
+                          <Link
+                            href="/terms"
+                            className="text-primary underline underline-offset-2 hover:text-primary/80"
+                          >
+                            Terms of Service
+                          </Link>{" "}
+                          and{" "}
+                          <Link
+                            href="/privacy"
+                            className="text-primary underline underline-offset-2 hover:text-primary/80"
+                          >
+                            Privacy Policy
+                          </Link>
+                        </span>
+                      </label>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
