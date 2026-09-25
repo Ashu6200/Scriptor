@@ -20,6 +20,14 @@
     "prepare": "husky",
     "postinstall": "prisma generate"
   },
+  "allowScripts": {
+    "@biomejs/biome": true,
+    "@prisma/client": true,
+    "@prisma/engines": true,
+    "esbuild": true,
+    "prisma": true,
+    "sharp": true
+  },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
     "@hookform/resolvers": "^5.2.2",

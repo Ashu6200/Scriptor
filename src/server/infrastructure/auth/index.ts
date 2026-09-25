@@ -7,6 +7,7 @@ import { redis } from "@infra/redis";
 import bcrypt from "bcryptjs";
 import { betterAuth } from "better-auth";
 import { prismaAdapter } from "better-auth/adapters/prisma";
+import { APIError } from "better-auth/api";
 
 const log = logger.child("Auth");
 
@@ -141,6 +142,11 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async () => {
+          throw new APIError("FORBIDDEN", {
+            message: "User registration is currently disabled.",
+          });
+        },
         after: async (user: { id: string }) => {
           await prisma.user.update({
             where: { id: user.id },
