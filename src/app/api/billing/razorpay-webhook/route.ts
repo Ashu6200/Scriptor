@@ -4,6 +4,8 @@ import { logger } from "@infra/logger";
 import { BillingService, type RazorpayWebhookEvent } from "@modules/billing";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const log = logger.child("RazorpayWebhook");
 const billingService = new BillingService();
 

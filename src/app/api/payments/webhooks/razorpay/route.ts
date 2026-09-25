@@ -2,6 +2,8 @@ import { logger } from "@infra/logger";
 import { WebhookService } from "@modules/payment";
 import { type NextRequest, NextResponse } from "next/server";
 
+export const dynamic = "force-dynamic";
+
 const log = logger.child("RazorpayPaymentWebhook");
 const webhookService = new WebhookService();
 const MAX_BODY_BYTES = 1_000_000;

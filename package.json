@@ -5,7 +5,7 @@
   "description": "CodeVault 2.0 — Next.js full-stack application",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
@@ -17,7 +17,8 @@
     "db:seed": "npx tsx scripts/seed-users.ts",
     "db:seed-reset": "npx tsx scripts/seed-users.ts --reset",
     "db:seed-dpdp": "npx tsx scripts/seed-dpdp-policies.ts",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@base-ui/react": "^1.4.1",
