@@ -135,38 +135,14 @@ export class DocumentService extends BaseService {
       let document: Document | null = null;
       while (!document) {
         try {
-          document = await prisma.$transaction(async (tx) => {
-            const doc = await tx.document.create({
-              data: {
-                ...data,
-                parentId,
-                slug,
-                authorId,
-                readingTime,
-              },
-            });
-
-            await tx.documentVersion.create({
-              data: {
-                documentId: doc.id,
-                title: doc.title,
-                content: doc.content || "",
-                createdBy: authorId,
-                versionNumber: 1,
-                changeSummary: "Initial creation",
-              },
-            });
-
-            await tx.notification.create({
-              data: {
-                userId: authorId,
-                workspaceId: data.workspaceId,
-                type: "document_created",
-                payload: { documentId: doc.id, title: doc.title, actorId: authorId },
-              },
-            });
-
-            return doc;
+          document = await prisma.document.create({
+            data: {
+              ...data,
+              parentId,
+              slug,
+              authorId,
+              readingTime,
+            },
           });
         } catch (err: unknown) {
           const isP2002 =
@@ -177,6 +153,34 @@ export class DocumentService extends BaseService {
             throw err;
           }
         }
+      }
+
+      try {
+        await Promise.all([
+          prisma.documentVersion.create({
+            data: {
+              documentId: document.id,
+              title: document.title,
+              content: document.content || "",
+              createdBy: authorId,
+              versionNumber: 1,
+              changeSummary: "Initial creation",
+            },
+          }),
+          prisma.notification.create({
+            data: {
+              userId: authorId,
+              workspaceId: data.workspaceId,
+              type: "document_created",
+              payload: { documentId: document.id, title: document.title, actorId: authorId },
+            },
+          }),
+        ]);
+      } catch (secondaryError) {
+        log.error(
+          `Failed to create version/notification for document ${document.id}:`,
+          secondaryError
+        );
       }
 
       void redis.del(`tree:${data.workspaceId}`).catch(() => {});
@@ -207,36 +211,37 @@ export class DocumentService extends BaseService {
         patch.readingTime = Math.max(1, Math.ceil(words / 200));
       }
 
-      const document = await prisma.$transaction(async (tx) => {
-        const doc = await tx.document.update({
-          where: { id },
-          data: patch,
-        });
+      const document = await prisma.document.update({
+        where: { id },
+        data: patch,
+      });
 
-        if (updateData.content || updateData.title) {
-          const version = await tx.documentVersion.findFirst({
+      if (updateData.content || updateData.title) {
+        try {
+          const version = await prisma.documentVersion.findFirst({
             where: { documentId: id },
             orderBy: { versionNumber: "desc" },
             select: { versionNumber: true },
           });
-          const latestVersion = version ? version.versionNumber : 0;
 
-          await tx.documentVersion.create({
+          await prisma.documentVersion.create({
             data: {
               documentId: id,
-              title: doc.title,
-              content: doc.content || "",
+              title: document.title,
+              content: document.content || "",
               createdBy: userId,
-              versionNumber: latestVersion + 1,
+              versionNumber: (version?.versionNumber ?? 0) + 1,
               changeSummary,
             },
           });
+        } catch (versionError) {
+          log.error(`Failed to create version for document ${id}:`, versionError);
         }
+      }
 
-        return doc;
-      });
-
-      await Promise.all([redis.del(`doc:${id}`), redis.del(`tree:${document.workspaceId}`)]);
+      void Promise.all([redis.del(`doc:${id}`), redis.del(`tree:${document.workspaceId}`)]).catch(
+        () => {}
+      );
 
       void auditService.logAction({
         action: "UPDATE",
@@ -477,7 +482,6 @@ export class DocumentService extends BaseService {
         throw new NotFoundError("Document in trash", id);
       }
 
-      // Check if parent is also deleted or missing. If so, reset parentId to null so it stays visible as root
       let parentId = document.parentId;
       if (parentId) {
         const parentDoc = await prisma.document.findFirst({
@@ -530,16 +534,18 @@ export class DocumentService extends BaseService {
         throw new NotFoundError("Document", id);
       }
 
-      await prisma.$transaction(async (tx) => {
-        await tx.comment.deleteMany({ where: { documentId: id } });
-        await tx.documentVersion.deleteMany({ where: { documentId: id } });
-        // Re-parent or delete immediate children
-        await tx.document.updateMany({
-          where: { parentId: id },
-          data: { parentId: document.parentId ?? null },
-        });
-        await tx.document.delete({ where: { id } });
-      });
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.comment.deleteMany({ where: { documentId: id } });
+          await tx.documentVersion.deleteMany({ where: { documentId: id } });
+          await tx.document.updateMany({
+            where: { parentId: id },
+            data: { parentId: document.parentId ?? null },
+          });
+          await tx.document.delete({ where: { id } });
+        },
+        { timeout: 60000 }
+      );
 
       await Promise.all([redis.del(`doc:${id}`), redis.del(`tree:${document.workspaceId}`)]);
 
@@ -574,11 +580,14 @@ export class DocumentService extends BaseService {
         return { count: 0 };
       }
 
-      await prisma.$transaction(async (tx) => {
-        await tx.comment.deleteMany({ where: { documentId: { in: docIds } } });
-        await tx.documentVersion.deleteMany({ where: { documentId: { in: docIds } } });
-        await tx.document.deleteMany({ where: { id: { in: docIds } } });
-      });
+      await prisma.$transaction(
+        async (tx) => {
+          await tx.comment.deleteMany({ where: { documentId: { in: docIds } } });
+          await tx.documentVersion.deleteMany({ where: { documentId: { in: docIds } } });
+          await tx.document.deleteMany({ where: { id: { in: docIds } } });
+        },
+        { timeout: 60000 }
+      );
 
       await Promise.all([
         ...docIds.map((docId) => redis.del(`doc:${docId}`)),

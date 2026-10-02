@@ -350,7 +350,7 @@ export default function DocumentEditorPage() {
   }
 
   return (
-    <div className="flex h-full w-full min-w-0 overflow-hidden bg-background text-foreground relative">
+    <div className="flex h-full max-h-lvh w-full min-w-0 overflow-hidden bg-background text-foreground relative">
       <aside
         className={cn(
           "shrink-0 transition-all duration-300 ease-in-out border-r border-border/60 bg-card flex flex-col relative z-10",
