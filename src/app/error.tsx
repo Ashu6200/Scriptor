@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
-export default function Error({
+export default function MainError({
   error,
   reset,
 }: {
@@ -18,7 +18,7 @@ export default function Error({
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <div className="w-full max-w-md text-center space-y-6">
         <div className="space-y-2">
-          <p className="text-5xl font-black font-mono text-destructive">Error</p>
+          <p className="text-5xl font-black  text-destructive">Error</p>
           <h1 className="text-2xl font-bold text-foreground">Something went wrong</h1>
           <p className="text-sm text-muted-foreground">
             {error.message || "An unexpected error occurred. Please try again."}

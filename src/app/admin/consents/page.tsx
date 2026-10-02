@@ -61,31 +61,31 @@ function ExpandedRow({ event }: { event: DpdpConsentEvent }) {
             <p className="text-muted-foreground font-semibold uppercase tracking-wider mb-1">
               Consent Method
             </p>
-            <p className="text-foreground font-mono">{event.consentMethod}</p>
+            <p className="text-foreground ">{event.consentMethod}</p>
           </div>
           <div>
             <p className="text-muted-foreground font-semibold uppercase tracking-wider mb-1">
               Source
             </p>
-            <p className="text-foreground font-mono">{event.source}</p>
+            <p className="text-foreground ">{event.source}</p>
           </div>
           <div>
             <p className="text-muted-foreground font-semibold uppercase tracking-wider mb-1">
               IP Address
             </p>
-            <p className="text-foreground font-mono">{event.ipAddress ?? "—"}</p>
+            <p className="text-foreground ">{event.ipAddress ?? "—"}</p>
           </div>
           <div>
             <p className="text-muted-foreground font-semibold uppercase tracking-wider mb-1">
               Policy Version
             </p>
-            <p className="text-foreground font-mono">v{event.policyVersion?.version ?? "—"}</p>
+            <p className="text-foreground ">v{event.policyVersion?.version ?? "—"}</p>
           </div>
           <div>
             <p className="text-muted-foreground font-semibold uppercase tracking-wider mb-1">
               Event ID
             </p>
-            <p className="text-foreground font-mono text-[10px] break-all">{event.id}</p>
+            <p className="text-foreground  text-[10px] break-all">{event.id}</p>
           </div>
         </div>
       </td>
@@ -130,9 +130,7 @@ export default function AdminConsentsPage() {
             Browse and audit all user consent events across all policies
           </p>
         </div>
-        {meta && (
-          <p className="text-xs font-mono text-muted-foreground">{meta.total} total records</p>
-        )}
+        {meta && <p className="text-xs  text-muted-foreground">{meta.total} total records</p>}
       </div>
 
       {/* Filters */}
@@ -199,7 +197,7 @@ export default function AdminConsentsPage() {
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+            <div className="flex items-center gap-3 text-muted-foreground  text-sm">
               <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
               Loading consent records...
             </div>
@@ -250,7 +248,7 @@ export default function AdminConsentsPage() {
                         <p className="text-sm font-semibold text-foreground">
                           {event.user?.name ?? "—"}
                         </p>
-                        <p className="text-xs text-muted-foreground font-mono">
+                        <p className="text-xs text-muted-foreground ">
                           {event.user?.email ?? event.userId}
                         </p>
                       </div>
@@ -260,7 +258,7 @@ export default function AdminConsentsPage() {
                         <p className="text-sm font-semibold text-foreground">
                           {event.policy?.name ?? "—"}
                         </p>
-                        <p className="text-xs text-muted-foreground font-mono">
+                        <p className="text-xs text-muted-foreground ">
                           {event.policy?.key ?? event.policyId}
                         </p>
                       </div>
@@ -269,12 +267,10 @@ export default function AdminConsentsPage() {
                       <StatusBadge status={event.status} />
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-xs font-mono text-muted-foreground">
-                        {event.consentMethod}
-                      </span>
+                      <span className="text-xs  text-muted-foreground">{event.consentMethod}</span>
                     </td>
                     <td className="px-4 py-3.5">
-                      <span className="text-xs font-mono text-muted-foreground">
+                      <span className="text-xs  text-muted-foreground">
                         {event.ipAddress ?? "—"}
                       </span>
                     </td>

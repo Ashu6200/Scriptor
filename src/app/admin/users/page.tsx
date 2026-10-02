@@ -1,5 +1,7 @@
 "use client";
 
+import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { Input } from "@/components/ui/input";
 import {
   useDeactivateUserMutation,
   useGetAdminUsersQuery,
@@ -7,8 +9,6 @@ import {
   useReactivateUserMutation,
   useToggleUserRoleMutation,
 } from "@/features/admin/api";
-import { Input } from "@/components/ui/input";
-import { PageSkeleton } from "@/components/ui/PageSkeleton";
 import {
   ChevronLeft,
   ChevronRight,
@@ -141,7 +141,7 @@ export default function AdminUsersPage() {
                           </div>
                           <div>
                             <p className="text-foreground font-semibold">{user.name || "—"}</p>
-                            <p className="text-xs text-muted-foreground font-mono">{user.email}</p>
+                            <p className="text-xs text-muted-foreground ">{user.email}</p>
                           </div>
                         </div>
                       </td>
@@ -199,11 +199,11 @@ export default function AdminUsersPage() {
                         </span>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="font-mono text-muted-foreground">
+                        <span className=" text-muted-foreground">
                           {user._count.ownedWorkspaces}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5 text-muted-foreground text-xs font-mono">
+                      <td className="px-5 py-3.5 text-muted-foreground text-xs ">
                         {new Date(user.createdAt).toLocaleDateString("en-IN", {
                           day: "2-digit",
                           month: "short",

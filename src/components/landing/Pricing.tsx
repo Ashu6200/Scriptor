@@ -86,7 +86,7 @@ export function Pricing() {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[12px] font-mono text-primary"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[12px]  text-primary"
           >
             <span>TRANSPARENT PRICING</span>
           </motion.div>
@@ -115,7 +115,7 @@ export function Pricing() {
             initial={{ opacity: 0, scale: 0.95 }}
             whileInView={{ opacity: 1, scale: 1 }}
             viewport={{ once: true }}
-            className="pt-4 flex items-center gap-3 font-mono tex-sm"
+            className="pt-4 flex items-center gap-3  tex-sm"
           >
             <span
               className={`cursor-pointer transition-colors ${
@@ -192,7 +192,7 @@ export function Pricing() {
               >
                 {tier.badge && (
                   <div className="absolute -top-3 left-8">
-                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-0.5 text-[10px] font-mono font-bold text-primary-foreground uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-0.5 text-[10px]  font-bold text-primary-foreground uppercase tracking-wider">
                       <Sparkles className="h-3 w-3" />
                       {tier.badge}
                     </span>
@@ -208,14 +208,14 @@ export function Pricing() {
                   </p>
 
                   <div className="mb-6 pb-6 border-b border-border">
-                    <div className="flex items-baseline gap-1.5 font-mono">
+                    <div className="flex items-baseline gap-1.5 ">
                       <span className="text-[38px] font-semibold text-foreground tracking-tight">
                         {priceDisplay}
                       </span>
                       <span className="text-muted-foreground text-sm">{periodDisplay}</span>
                     </div>
                     {isYearly && tier.monthlyPrice > 0 && (
-                      <p className="text-[12px] font-mono text-green-600 dark:text-green-400 mt-1">
+                      <p className="text-[12px]  text-green-600 dark:text-green-400 mt-1">
                         Equivalent to ₹{Math.round(tier.yearlyPrice / 12).toLocaleString("en-IN")} /
                         month
                       </p>
@@ -223,7 +223,7 @@ export function Pricing() {
                   </div>
 
                   <div className="space-y-3 mb-8">
-                    <p className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider font-semibold">
+                    <p className="text-[10px]  text-muted-foreground uppercase tracking-wider font-semibold">
                       What's included:
                     </p>
                     {tier.features.map((feature) => (

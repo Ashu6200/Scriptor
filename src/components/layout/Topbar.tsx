@@ -55,7 +55,7 @@ export function Topbar() {
           <span className="flex-1 text-left font-sans text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-150 truncate">
             Search docs, workspaces, settings...
           </span>
-          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-border bg-background px-1.5 font-mono text-[10px] font-semibold text-muted-foreground shadow-2xs group-hover:border-primary/30 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-150">
+          <kbd className="pointer-events-none inline-flex h-5 select-none items-center gap-0.5 rounded border border-border bg-background px-1.5  text-[10px] font-semibold text-muted-foreground shadow-2xs group-hover:border-primary/30 group-hover:bg-primary/10 group-hover:text-primary transition-all duration-150">
             <span className="text-[10px]">⌘</span>K
           </kbd>
         </button>

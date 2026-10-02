@@ -231,7 +231,7 @@ export function TableOfContents({ editor, onClose }: TableOfContentsProps) {
           </div>
           <span className="text-xs font-semibold tracking-tight text-foreground">Outline</span>
           {headings.length > 0 && (
-            <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground border border-border/50">
+            <span className="text-[10px]  px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground border border-border/50">
               {headings.length}
             </span>
           )}
@@ -327,7 +327,7 @@ export function TableOfContents({ editor, onClose }: TableOfContentsProps) {
             <p className="text-[11px] text-muted-foreground/80 leading-relaxed max-w-50 mb-4">
               Use headings in your document to automatically generate an outline.
             </p>
-            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/40 border border-border/40 text-[10px] text-muted-foreground/70 font-mono mb-4">
+            <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-muted/40 border border-border/40 text-[10px] text-muted-foreground/70  mb-4">
               <span># H1</span>
               <span>## H2</span>
               <span>### H3</span>
@@ -409,7 +409,7 @@ export function TableOfContents({ editor, onClose }: TableOfContentsProps) {
                 {/* Level Pill Tag */}
                 <span
                   className={cn(
-                    "shrink-0 text-[9px] font-mono uppercase px-1 py-0.2 rounded transition-opacity",
+                    "shrink-0 text-[9px]  uppercase px-1 py-0.2 rounded transition-opacity",
                     isActive
                       ? "bg-primary/20 text-primary border border-primary/30"
                       : "opacity-40 group-hover:opacity-90 bg-muted text-muted-foreground border border-border/40"
@@ -425,7 +425,7 @@ export function TableOfContents({ editor, onClose }: TableOfContentsProps) {
 
       {/* Subtle Footer with Status */}
       {headings.length > 0 && (
-        <div className="px-3 py-2 border-t border-border/40 bg-muted/10 text-[10px] font-mono text-muted-foreground/70 flex items-center justify-between shrink-0">
+        <div className="px-3 py-2 border-t border-border/40 bg-muted/10 text-[10px]  text-muted-foreground/70 flex items-center justify-between shrink-0">
           <span>{progressPercent}% read</span>
           <span>
             {headings.length} {headings.length === 1 ? "section" : "sections"}

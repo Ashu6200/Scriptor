@@ -1,11 +1,11 @@
 "use client";
 
+import { Input } from "@/components/ui/input";
 import {
   useGetAdminWorkspacesQuery,
   useSuspendWorkspaceMutation,
   useUnsuspendWorkspaceMutation,
 } from "@/features/admin/api";
-import { Input } from "@/components/ui/input";
 import { Ban, CheckCircle2, ChevronLeft, ChevronRight, Crown, Search } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -119,7 +119,7 @@ export default function AdminWorkspacesPage() {
                     <td className="px-5 py-3.5">
                       <div>
                         <p className="text-foreground font-semibold">{ws.name}</p>
-                        <p className="text-xs text-muted-foreground font-mono">/{ws.slug}</p>
+                        <p className="text-xs text-muted-foreground ">/{ws.slug}</p>
                       </div>
                     </td>
                     <td className="px-5 py-3.5">
@@ -140,7 +140,7 @@ export default function AdminWorkspacesPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="font-mono text-muted-foreground">{ws._count.documents}</span>
+                      <span className=" text-muted-foreground">{ws._count.documents}</span>
                     </td>
                     <td className="px-5 py-3.5">
                       <span

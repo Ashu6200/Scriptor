@@ -444,7 +444,7 @@ export function Sidebar() {
             >
               <Search className="h-3.5 w-3.5 shrink-0" />
               <span className="flex-1 text-left truncate">Search...</span>
-              <kbd className="pointer-events-none rounded border border-border bg-background px-1 font-mono text-[10px] text-muted-foreground">
+              <kbd className="pointer-events-none rounded border border-border bg-background px-1  text-[10px] text-muted-foreground">
                 ⌘K
               </kbd>
             </button>
@@ -476,7 +476,7 @@ export function Sidebar() {
         {pinnedWorkspaces.length > 0 && (
           <>
             {!isCollapsed && (
-              <SidebarGroupLabel className="px-4 text-[10px] font-mono tracking-wider text-muted-foreground uppercase">
+              <SidebarGroupLabel className="px-4 text-[10px]  tracking-wider text-muted-foreground uppercase">
                 PINNED WORKSPACES
               </SidebarGroupLabel>
             )}
@@ -523,7 +523,7 @@ export function Sidebar() {
         {(session?.user as { platformRole?: string })?.platformRole === "ADMIN" && (
           <SidebarGroup>
             {!isCollapsed && (
-              <SidebarGroupLabel className="px-4 text-rose-500/80 dark:text-rose-400/80 font-mono text-[10px] tracking-wider">
+              <SidebarGroupLabel className="px-4 text-rose-500/80 dark:text-rose-400/80  text-[10px] tracking-wider">
                 PLATFORM CONTROL
               </SidebarGroupLabel>
             )}
@@ -562,7 +562,7 @@ export function Sidebar() {
                     <p className="text-[10px] font-semibold text-foreground truncate">
                       {session?.user?.name ?? "User"}
                     </p>
-                    <p className="text-[10px] text-primary font-mono truncate">
+                    <p className="text-[10px] text-primary  truncate">
                       {session?.user?.email ?? ""}
                     </p>
                   </div>

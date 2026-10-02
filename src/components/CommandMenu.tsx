@@ -111,7 +111,7 @@ export function CommandMenu() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-            <div className="flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-0.5 font-mono text-[10px] font-semibold text-muted-foreground">
+            <div className="flex items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-0.5  text-[10px] font-semibold text-muted-foreground">
               <span>ESC</span>
             </div>
           </div>
@@ -120,7 +120,7 @@ export function CommandMenu() {
             {filteredGroups.length > 0 ? (
               filteredGroups.map((group) => (
                 <div key={group.category}>
-                  <div className="px-3 py-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-muted-foreground">
+                  <div className="px-3 py-1.5 text-[10px]  font-semibold uppercase tracking-wider text-muted-foreground">
                     {group.category}
                   </div>
                   <div className="space-y-0.5">
@@ -139,12 +139,12 @@ export function CommandMenu() {
                         </div>
                         <div className="flex items-center gap-2">
                           {item.badge && (
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-semibold">
+                            <span className="text-[10px]  px-2 py-0.5 rounded bg-primary/10 text-primary border border-primary/20 font-semibold">
                               {item.badge}
                             </span>
                           )}
                           {item.shortcut && (
-                            <span className="font-mono text-[10px] text-muted-foreground">
+                            <span className=" text-[10px] text-muted-foreground">
                               {item.shortcut}
                             </span>
                           )}
@@ -155,13 +155,13 @@ export function CommandMenu() {
                 </div>
               ))
             ) : (
-              <div className="py-8 text-center text-sm font-mono text-muted-foreground">
+              <div className="py-8 text-center text-sm  text-muted-foreground">
                 No matching commands found.
               </div>
             )}
           </div>
 
-          <div className="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-2.5 text-[10px] font-mono text-muted-foreground">
+          <div className="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-2.5 text-[10px]  text-muted-foreground">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
                 <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px]">

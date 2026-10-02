@@ -85,7 +85,7 @@ export default async function PublicDocsLayout({ children, params }: PublicLayou
             </Link>
 
             <span className="text-muted-foreground/40 text-xs hidden sm:inline">•</span>
-            <span className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline">
+            <span className="text-xs  font-medium text-muted-foreground uppercase tracking-wider hidden sm:inline">
               Docs
             </span>
           </div>
@@ -109,7 +109,7 @@ export default async function PublicDocsLayout({ children, params }: PublicLayou
         {/* Left Sidebar (Desktop Navigation) */}
         <aside className="w-full md:w-64 shrink-0 border-r border-border/50 py-6 px-4 md:px-6 bg-card/20 hidden md:block overflow-y-auto">
           <div className="space-y-4">
-            <div className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground px-2">
+            <div className="text-[11px]  font-semibold uppercase tracking-wider text-muted-foreground px-2">
               Documentation
             </div>
 
@@ -166,7 +166,7 @@ export default async function PublicDocsLayout({ children, params }: PublicLayou
             </Link>{" "}
             — The Developer Knowledge Base
           </span>
-          <span className="text-[11px] font-mono text-muted-foreground/60">
+          <span className="text-[11px]  text-muted-foreground/60">
             {workspace.name} &copy; {new Date().getFullYear()}
           </span>
         </div>

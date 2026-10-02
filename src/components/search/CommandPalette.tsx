@@ -112,7 +112,7 @@ export function CommandPalette() {
               <X className="h-4 w-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-block text-[10px] font-mono border border-border rounded px-1.5 py-0.5 text-muted-foreground bg-muted">
+          <kbd className="hidden sm:inline-block text-[10px]  border border-border rounded px-1.5 py-0.5 text-muted-foreground bg-muted">
             ESC
           </kbd>
         </div>
@@ -165,13 +165,13 @@ export function CommandPalette() {
         {/* Footer */}
         <div className="px-4 py-2 border-t border-border flex items-center gap-4 text-[10px] text-muted-foreground">
           <span className="flex items-center gap-1">
-            <kbd className="border border-border rounded px-1 bg-muted font-mono">↑↓</kbd> navigate
+            <kbd className="border border-border rounded px-1 bg-muted ">↑↓</kbd> navigate
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="border border-border rounded px-1 bg-muted font-mono">↵</kbd> open
+            <kbd className="border border-border rounded px-1 bg-muted ">↵</kbd> open
           </span>
           <span className="flex items-center gap-1">
-            <kbd className="border border-border rounded px-1 bg-muted font-mono">ESC</kbd> close
+            <kbd className="border border-border rounded px-1 bg-muted ">ESC</kbd> close
           </span>
         </div>
       </div>

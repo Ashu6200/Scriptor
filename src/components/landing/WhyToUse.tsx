@@ -66,7 +66,7 @@ export function WhyToUse() {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[12px] font-mono text-primary"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[12px]  text-primary"
           >
             <span>THE SCRIPTOR ADVANTAGE</span>
           </motion.div>
@@ -112,7 +112,7 @@ export function WhyToUse() {
                     >
                       <Icon className="h-5 w-5" />
                     </div>
-                    <span className="text-[10px] font-mono text-muted-foreground font-semibold tracking-wider uppercase">
+                    <span className="text-[10px]  text-muted-foreground font-semibold tracking-wider uppercase">
                       {pillar.tag}
                     </span>
                   </div>
@@ -139,7 +139,7 @@ export function WhyToUse() {
                 How Scriptor contrasts with legacy documentation tools
               </p>
             </div>
-            <div className="flex items-center gap-4 text-[12px] font-mono">
+            <div className="flex items-center gap-4 text-[12px] ">
               <span className="flex items-center gap-1.5 text-muted-foreground">
                 <span className="h-2 w-2 rounded-full bg-destructive" /> Legacy Systems
               </span>
@@ -149,7 +149,7 @@ export function WhyToUse() {
             </div>
           </div>
 
-          <div className="divide-y divide-border font-mono tex-sm">
+          <div className="divide-y divide-border  tex-sm">
             {comparisonData.map((row) => (
               <div
                 key={row.feature}

@@ -25,7 +25,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
   if (isPending) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background">
-        <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+        <div className="flex items-center gap-3 text-muted-foreground  text-sm">
           <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
           Authenticating...
         </div>

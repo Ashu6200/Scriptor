@@ -1,6 +1,11 @@
 "use client";
 
-import { useListPoliciesQuery, usePublishPolicyMutation, useArchivePolicyMutation, useDeletePolicyMutation } from "@/features/dpdp/api";
+import {
+  useArchivePolicyMutation,
+  useDeletePolicyMutation,
+  useListPoliciesQuery,
+  usePublishPolicyMutation,
+} from "@/features/dpdp/api";
 import type { DpdpPolicy } from "@/features/dpdp/api";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -93,7 +98,8 @@ export default function PoliciesListPage() {
   };
 
   const handleDelete = async (policy: DpdpPolicy) => {
-    if (!confirm(`Are you sure you want to delete "${policy.name}"? This action uses soft-delete.`)) return;
+    if (!confirm(`Are you sure you want to delete "${policy.name}"? This action uses soft-delete.`))
+      return;
     try {
       await deletePolicy(policy.id).unwrap();
       toast.success(`Policy "${policy.name}" deleted`);
@@ -135,13 +141,19 @@ export default function PoliciesListPage() {
             type="text"
             placeholder="Search policies..."
             value={search}
-            onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="h-10 w-full rounded-lg border border-border bg-card pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
           />
         </div>
         <select
           value={statusFilter}
-          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+          onChange={(e) => {
+            setStatusFilter(e.target.value);
+            setPage(1);
+          }}
           className="h-10 rounded-lg border border-border bg-card px-3 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
         >
           <option value="">All Status</option>
@@ -155,7 +167,7 @@ export default function PoliciesListPage() {
       <div className="rounded-xl border border-border bg-card overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center py-16">
-            <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+            <div className="flex items-center gap-3 text-muted-foreground  text-sm">
               <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
               Loading policies...
             </div>
@@ -199,10 +211,7 @@ export default function PoliciesListPage() {
               {policies.map((policy) => {
                 const latestVersion = policy.versions?.[0];
                 return (
-                  <tr
-                    key={policy.id}
-                    className="hover:bg-muted/20 transition-colors"
-                  >
+                  <tr key={policy.id} className="hover:bg-muted/20 transition-colors">
                     <td className="px-4 py-3.5">
                       <div>
                         <Link
@@ -211,9 +220,7 @@ export default function PoliciesListPage() {
                         >
                           {policy.name}
                         </Link>
-                        <p className="text-xs text-muted-foreground font-mono mt-0.5">
-                          {policy.key}
-                        </p>
+                        <p className="text-xs text-muted-foreground  mt-0.5">{policy.key}</p>
                       </div>
                     </td>
                     <td className="px-4 py-3.5">
@@ -222,7 +229,7 @@ export default function PoliciesListPage() {
                       </p>
                     </td>
                     <td className="px-4 py-3.5 text-center">
-                      <span className="text-sm font-mono font-semibold text-foreground">
+                      <span className="text-sm  font-semibold text-foreground">
                         v{latestVersion?.version ?? 0}
                       </span>
                     </td>
@@ -233,9 +240,7 @@ export default function PoliciesListPage() {
                       <span
                         className={cn(
                           "text-xs font-semibold",
-                          latestVersion?.consentRequired
-                            ? "text-primary"
-                            : "text-muted-foreground"
+                          latestVersion?.consentRequired ? "text-primary" : "text-muted-foreground"
                         )}
                       >
                         {latestVersion?.consentRequired ? "Yes" : "No"}

@@ -30,7 +30,7 @@ export default function Home() {
           <div className="max-w-300 mx-auto px-6 md:px-10">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
               <div className="space-y-6">
-                <div className="inline-flex items-center gap-2 rounded-full border border-wv-border px-3 py-1 text-[12px] font-mono text-wv-cyan">
+                <div className="inline-flex items-center gap-2 rounded-full border border-wv-border px-3 py-1 text-[12px]  text-wv-cyan">
                   <span>SCRIPTOR CORE ARCHITECTURE</span>
                 </div>
                 <h2
@@ -79,8 +79,8 @@ export default function Home() {
                         Cryptographic Ledger & Audit Trail
                       </h4>
                       <p className="text-wv-secondary text-sm">
-                        SHA-256 hashed ledger integrity verification with full actor attribution
-                        and immutable tamper-evident audit logging.
+                        SHA-256 hashed ledger integrity verification with full actor attribution and
+                        immutable tamper-evident audit logging.
                       </p>
                     </div>
                   </div>
@@ -89,7 +89,7 @@ export default function Home() {
 
               {/* Architecture Terminal Status Card */}
               <div className="rounded-2xl border border-wv-border bg-wv-card p-8 space-y-6">
-                <div className="flex items-center justify-between border-b border-wv-border pb-4 font-mono text-[12px]">
+                <div className="flex items-center justify-between border-b border-wv-border pb-4  text-[12px]">
                   <div className="flex items-center gap-2">
                     <Terminal className="h-4 w-4 text-wv-cyan" />
                     <span className="text-white font-semibold">Engine Status</span>
@@ -99,7 +99,7 @@ export default function Home() {
                   </span>
                 </div>
 
-                <div className="space-y-3 font-mono text-[12px]">
+                <div className="space-y-3  text-[12px]">
                   <div className="flex justify-between items-center p-2.5 rounded bg-wv-bg border border-wv-border">
                     <span className="text-wv-secondary flex items-center gap-2">
                       <FileText className="h-3.5 w-3.5 text-wv-cyan" />
@@ -163,7 +163,7 @@ export default function Home() {
                   <Link href="/dashboard">
                     <button
                       type="button"
-                      className="h-11 px-7 text-sm font-semibold text-black bg-wv-cyan rounded-md hover:bg-wv-cyan/90 transition-all duration-150 inline-flex items-center justify-center gap-2 font-mono"
+                      className="h-11 px-7 text-sm font-semibold text-black bg-wv-cyan rounded-md hover:bg-wv-cyan/90 transition-all duration-150 inline-flex items-center justify-center gap-2 "
                     >
                       Go to Dashboard
                       <ArrowRight className="h-4 w-4" />
@@ -173,7 +173,7 @@ export default function Home() {
                   <Link href="/signup">
                     <button
                       type="button"
-                      className="h-11 px-7 text-sm font-semibold text-black bg-wv-cyan rounded-md hover:bg-wv-cyan/90 transition-all duration-150 inline-flex items-center justify-center gap-2 font-mono"
+                      className="h-11 px-7 text-sm font-semibold text-black bg-wv-cyan rounded-md hover:bg-wv-cyan/90 transition-all duration-150 inline-flex items-center justify-center gap-2 "
                     >
                       Get Started Free
                       <ArrowRight className="h-4 w-4" />
@@ -183,7 +183,7 @@ export default function Home() {
                 <Link href="/dashboard/documents">
                   <button
                     type="button"
-                    className="h-11 px-7 text-sm font-semibold text-wv-text bg-transparent border border-wv-border rounded-md hover:border-white transition-all duration-150 font-mono"
+                    className="h-11 px-7 text-sm font-semibold text-wv-text bg-transparent border border-wv-border rounded-md hover:border-white transition-all duration-150 "
                   >
                     Explore Demo
                   </button>

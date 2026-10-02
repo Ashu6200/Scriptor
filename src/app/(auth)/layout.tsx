@@ -29,12 +29,12 @@ export default function AuthLayout({
         <div className="relative z-10 flex items-center justify-between">
           <Link href="/" className="inline-flex items-center gap-3 group">
             <span className="font-bold text-xl tracking-tight text-white">Scriptor</span>
-            <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/90 border border-white/15 backdrop-blur-md">
+            <span className="text-[10px]  font-medium px-2 py-0.5 rounded-full bg-white/10 text-white/90 border border-white/15 backdrop-blur-md">
               v2.0
             </span>
           </Link>
 
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-zinc-300 bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
+          <span className="inline-flex items-center gap-1.5 text-[11px]  text-zinc-300 bg-black/40 px-3 py-1 rounded-full border border-white/10 backdrop-blur-md">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
             Zero Data Silos
           </span>
@@ -42,7 +42,7 @@ export default function AuthLayout({
 
         <div className="relative z-10 space-y-6 max-w-lg">
           <div className="space-y-3.5">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/25 border border-primary/40 text-primary text-xs font-mono font-medium backdrop-blur-md">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/25 border border-primary/40 text-primary text-xs  font-medium backdrop-blur-md">
               <Sparkles className="h-3.5 w-3.5 text-primary" />
               <span>Developer-First Knowledge Platform</span>
             </div>
@@ -56,16 +56,14 @@ export default function AuthLayout({
           <div className="pt-4 border-t border-white/15 flex items-center justify-between">
             <div>
               <div className="font-semibold text-sm text-white">Elena Vance</div>
-              <div className="text-xs text-zinc-400 font-mono">
-                Principal Systems Architect · Pro Plan
-              </div>
+              <div className="text-xs text-zinc-400 ">Principal Systems Architect · Pro Plan</div>
             </div>
 
             <div className="hidden sm:flex items-center gap-2">
-              <span className="text-[11px] font-mono px-2 py-1 rounded bg-white/10 text-white/80 border border-white/10">
+              <span className="text-[11px]  px-2 py-1 rounded bg-white/10 text-white/80 border border-white/10">
                 TipTap Editor
               </span>
-              <span className="text-[11px] font-mono px-2 py-1 rounded bg-white/10 text-white/80 border border-white/10">
+              <span className="text-[11px]  px-2 py-1 rounded bg-white/10 text-white/80 border border-white/10">
                 Snapshots v3
               </span>
             </div>
@@ -77,7 +75,7 @@ export default function AuthLayout({
         <header className="w-full flex items-center justify-between px-6 py-4 sm:px-10 border-b border-border/40">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors group"
+            className="inline-flex items-center gap-2 text-xs  text-muted-foreground hover:text-foreground transition-colors group"
           >
             <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
             <span>Back to website</span>
@@ -101,7 +99,7 @@ export default function AuthLayout({
 
         <footer className="w-full px-6 py-4 sm:px-10 text-center text-xs text-muted-foreground border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p>© 2026 Scriptor. Collaborative engineering knowledge base.</p>
-          <div className="flex items-center gap-4 text-[11px] font-mono">
+          <div className="flex items-center gap-4 text-[11px] ">
             <Link href="/terms" className="hover:text-foreground transition-colors">
               Terms
             </Link>

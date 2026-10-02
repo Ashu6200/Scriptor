@@ -98,11 +98,11 @@ export function Hero() {
                 <div className="w-3 h-3 rounded-full bg-[#27c93f]" />
               </div>
               <div className="h-4 w-px bg-border mx-1" />
-              <span className="font-mono text-[12px] text-muted-foreground truncate">
+              <span className=" text-[12px] text-muted-foreground truncate">
                 scriptor.app/dashboard/documents/developer-blog
               </span>
             </div>
-            <div className="flex items-center gap-3 font-mono text-[10px]">
+            <div className="flex items-center gap-3  text-[10px]">
               <span className="flex items-center gap-1.5 text-primary">
                 <span className="h-1.5 w-1.5 rounded-full bg-primary animate-ping" />
                 WORKSPACE ACTIVE

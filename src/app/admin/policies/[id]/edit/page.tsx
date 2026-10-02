@@ -71,7 +71,7 @@ export default function EditPolicyPage({ params }: { params: Promise<{ id: strin
   if (isLoading || !policy) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+        <div className="flex items-center gap-3 text-muted-foreground  text-sm">
           <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
           Loading policy...
         </div>
@@ -105,7 +105,7 @@ export default function EditPolicyPage({ params }: { params: Promise<{ id: strin
             {/* Key — read-only */}
             <div className="space-y-1.5">
               <label className={labelClass}>Key (immutable)</label>
-              <div className="h-10 w-full rounded-lg border border-border bg-muted/30 px-3 flex items-center text-sm text-muted-foreground font-mono select-all">
+              <div className="h-10 w-full rounded-lg border border-border bg-muted/30 px-3 flex items-center text-sm text-muted-foreground  select-all">
                 {policy.key}
               </div>
               <p className="text-xs text-muted-foreground">

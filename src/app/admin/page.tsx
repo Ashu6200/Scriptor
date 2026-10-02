@@ -1,6 +1,5 @@
 "use client";
 
-import type React from "react";
 import { useGetAdminMetricsQuery } from "@/features/admin/api";
 import {
   Activity,
@@ -12,6 +11,7 @@ import {
   UserPlus,
   Users,
 } from "lucide-react";
+import type React from "react";
 
 function KPICard({
   label,
@@ -46,7 +46,7 @@ function KPICard({
           <Icon className={`h-4 w-4 ${a.text}`} />
         </div>
       </div>
-      <p className="text-2xl lg:text-3xl font-bold font-mono text-foreground leading-none tracking-tight">
+      <p className="text-2xl lg:text-3xl font-bold  text-foreground leading-none tracking-tight">
         {value}
       </p>
       {subtext && (
@@ -87,7 +87,7 @@ function PlanBreakdownBar({ planCounts }: { planCounts: Record<string, number> }
           <div key={key} className="flex items-center gap-2 text-xs">
             <span className={`h-2.5 w-2.5 rounded-full ${color}`} />
             <span className="text-muted-foreground">{label}</span>
-            <span className="font-mono text-foreground font-semibold">{planCounts[key] || 0}</span>
+            <span className=" text-foreground font-semibold">{planCounts[key] || 0}</span>
           </div>
         ))}
       </div>
@@ -101,7 +101,7 @@ export default function AdminDashboardPage() {
   if (isLoading || !metrics) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+        <div className="flex items-center gap-3 text-muted-foreground  text-sm">
           <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
           Loading metrics...
         </div>
@@ -196,25 +196,21 @@ export default function AdminDashboardPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">User Growth (7d)</span>
-              <span className="font-mono text-sm text-emerald-500 font-semibold">
-                +{metrics.newUsers7d}
-              </span>
+              <span className=" text-sm text-emerald-500 font-semibold">+{metrics.newUsers7d}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Active Users</span>
-              <span className="font-mono text-sm text-primary font-semibold">
-                {metrics.activeUsers7d}
-              </span>
+              <span className=" text-sm text-primary font-semibold">{metrics.activeUsers7d}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">Paid Workspaces</span>
-              <span className="font-mono text-sm text-purple-500 font-semibold">
+              <span className=" text-sm text-purple-500 font-semibold">
                 {(metrics.planCounts.PRO || 0) + (metrics.planCounts.MAX || 0)}
               </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">ARR (Estimated)</span>
-              <span className="font-mono text-sm text-emerald-500 font-semibold">
+              <span className=" text-sm text-emerald-500 font-semibold">
                 {formatCurrency(metrics.mrr * 12)}
               </span>
             </div>

@@ -33,7 +33,7 @@ export default function DashboardPage() {
           {isLoading ? (
             <div className="h-8 w-16 bg-muted animate-pulse rounded" />
           ) : (
-            <p className="text-2xl lg:text-3xl font-bold font-mono text-foreground leading-none">
+            <p className="text-2xl lg:text-3xl font-bold  text-foreground leading-none">
               {totalDocs.toLocaleString()}
             </p>
           )}
@@ -54,7 +54,7 @@ export default function DashboardPage() {
           {isLoading ? (
             <div className="h-8 w-10 bg-muted animate-pulse rounded" />
           ) : (
-            <p className="text-2xl lg:text-3xl font-bold font-mono text-foreground leading-none">
+            <p className="text-2xl lg:text-3xl font-bold  text-foreground leading-none">
               {totalWorkspaces}
             </p>
           )}
@@ -72,9 +72,7 @@ export default function DashboardPage() {
               <Activity className="h-4 w-4 text-primary" />
             </div>
           </div>
-          <p className="text-2xl lg:text-3xl font-bold font-mono text-muted-foreground leading-none">
-            —
-          </p>
+          <p className="text-2xl lg:text-3xl font-bold  text-muted-foreground leading-none">—</p>
           <p className="text-xs text-muted-foreground mt-2.5">Usage analytics coming soon</p>
         </div>
       </div>
@@ -83,7 +81,7 @@ export default function DashboardPage() {
         <div className="col-span-12 lg:col-span-8 rounded-xl border border-border bg-card p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base font-semibold text-foreground">Document Activity</h2>
-            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-mono">
+            <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full ">
               Sample data
             </span>
           </div>
@@ -106,7 +104,7 @@ export default function DashboardPage() {
               );
             })}
           </div>
-          <div className="flex justify-between mt-2 text-xs text-muted-foreground font-mono px-2">
+          <div className="flex justify-between mt-2 text-xs text-muted-foreground  px-2">
             {days.map((d) => (
               <span key={d}>{d}</span>
             ))}
@@ -121,25 +119,25 @@ export default function DashboardPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2.5">
               <span className="text-xs text-muted-foreground">Documents</span>
-              <span className="text-sm font-bold font-mono text-foreground">
+              <span className="text-sm font-bold  text-foreground">
                 {isLoading ? "—" : totalDocs.toLocaleString()}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2.5">
               <span className="text-xs text-muted-foreground">Workspaces</span>
-              <span className="text-sm font-bold font-mono text-foreground">
+              <span className="text-sm font-bold  text-foreground">
                 {isLoading ? "—" : totalWorkspaces}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2.5">
               <span className="text-xs text-muted-foreground">Plan</span>
-              <span className="text-sm font-bold font-mono text-foreground capitalize">
+              <span className="text-sm font-bold  text-foreground capitalize">
                 {subscriptionPlan ?? "—"}
               </span>
             </div>
             <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-3 py-2.5">
               <span className="text-xs text-muted-foreground">Role</span>
-              <span className="text-sm font-bold font-mono text-foreground capitalize">
+              <span className="text-sm font-bold  text-foreground capitalize">
                 {platformRole?.toLowerCase() ?? "—"}
               </span>
             </div>

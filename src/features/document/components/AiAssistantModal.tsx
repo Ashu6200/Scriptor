@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,6 +23,7 @@ import {
   Sparkles,
   Wand2,
 } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 interface AiAssistantModalProps {
@@ -134,7 +134,7 @@ export function AiAssistantModal({
             <div>
               <DialogTitle className="text-lg font-bold tracking-tight flex items-center gap-2">
                 CodeVault Copilot
-                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                <span className="text-[10px] uppercase  px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                   AI Assistant
                 </span>
               </DialogTitle>
@@ -212,7 +212,7 @@ export function AiAssistantModal({
         {result && (
           <div className="flex-1 min-h-35 overflow-y-auto mt-4 rounded-xl border border-border/70 bg-muted/20 p-4 space-y-2">
             <div className="flex items-center justify-between border-b border-border/50 pb-2">
-              <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
+              <span className="text-[11px]  font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1">
                 <Check className="h-3 w-3 text-emerald-500" /> Output Preview
               </span>
 

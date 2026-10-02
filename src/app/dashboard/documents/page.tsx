@@ -56,19 +56,16 @@ export default function DocumentsPage() {
   const { data: profile } = useGetProfileQuery();
 
   const primaryWorkspace = workspaces[0];
-  const activeWsId = primaryWorkspace?.id || "all";
+  const activeWsId = primaryWorkspace?.id;
 
   const {
     data,
     isLoading: isLoadingDocuments,
     isError: isDocsError,
-  } = useGetDocumentsQuery({
-    workspaceId: activeWsId,
-    authorId: profile?.id,
-  });
+  } = useGetDocumentsQuery({ workspaceId: activeWsId! }, { skip: !activeWsId });
   const [viewMode, setViewMode] = useState<"grid" | "tree">("grid");
-  const { data: tree } = useGetDocumentTreeQuery(activeWsId, {
-    skip: viewMode !== "tree" || activeWsId === "all",
+  const { data: tree } = useGetDocumentTreeQuery(activeWsId!, {
+    skip: viewMode !== "tree" || !activeWsId,
   });
   const [createDocument] = useCreateDocumentMutation();
   const [showCreateDoc, setShowCreateDoc] = useState(false);

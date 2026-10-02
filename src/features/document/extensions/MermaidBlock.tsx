@@ -1,12 +1,9 @@
 "use client";
 
-import { Node, mergeAttributes } from "@tiptap/core";
-import { type NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
-import mermaid from "mermaid";
-import { useTheme } from "next-themes";
-import React, { useEffect, useId, useMemo, useState } from "react";
 import { useGetProfileQuery } from "@/features/user/api";
 import { getPlanEntitlements } from "@/lib/client-entitlements";
+import { Node, mergeAttributes } from "@tiptap/core";
+import { type NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import {
   Check,
   Code2,
@@ -21,6 +18,9 @@ import {
   Trash2,
   Zap,
 } from "lucide-react";
+import mermaid from "mermaid";
+import { useTheme } from "next-themes";
+import React, { useEffect, useId, useMemo, useState } from "react";
 
 declare module "@tiptap/core" {
   interface Commands<ReturnType> {
@@ -210,7 +210,7 @@ function MermaidComponent({ node, updateAttributes, deleteNode }: NodeViewProps)
         {/* Header Toolbar */}
         <div className="flex items-center justify-between px-3 py-2 bg-muted/40 border-b border-border/50 text-xs">
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1.5 font-semibold text-foreground/80 font-mono text-[11px] uppercase tracking-wider">
+            <span className="flex items-center gap-1.5 font-semibold text-foreground/80  text-[11px] uppercase tracking-wider">
               <GitFork className="h-3.5 w-3.5 text-primary" /> Mermaid Diagram
             </span>
 
@@ -282,13 +282,13 @@ function MermaidComponent({ node, updateAttributes, deleteNode }: NodeViewProps)
 
         {/* Editor Code Area */}
         {isEditing && (
-          <div className="p-3 bg-muted/20 border-b border-border/40 font-mono text-xs">
+          <div className="p-3 bg-muted/20 border-b border-border/40  text-xs">
             <textarea
               value={code}
               onChange={(e) => handleCodeChange(e.target.value)}
               rows={8}
               spellCheck={false}
-              className="w-full bg-background border border-border/60 rounded-lg p-2.5 text-foreground font-mono text-xs leading-relaxed outline-none focus:ring-2 focus:ring-primary/20 resize-y"
+              className="w-full bg-background border border-border/60 rounded-lg p-2.5 text-foreground  text-xs leading-relaxed outline-none focus:ring-2 focus:ring-primary/20 resize-y"
               placeholder="Enter Mermaid diagram code..."
             />
           </div>
@@ -299,7 +299,7 @@ function MermaidComponent({ node, updateAttributes, deleteNode }: NodeViewProps)
           {error ? (
             <div className="p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs max-w-lg text-center space-y-1">
               <p className="font-semibold">Failed to render Mermaid diagram</p>
-              <p className="text-[11px] opacity-80 font-mono">{error}</p>
+              <p className="text-[11px] opacity-80 ">{error}</p>
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}

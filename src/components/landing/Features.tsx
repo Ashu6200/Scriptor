@@ -12,7 +12,7 @@ export function Features() {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[12px] font-mono text-primary"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[12px]  text-primary"
           >
             <span>ENGINEERED FOR ENGINEERING TEAMS</span>
           </motion.div>
@@ -62,7 +62,7 @@ export function Features() {
               </p>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-3 font-mono text-[12px]">
+            <div className="mt-8 pt-6 border-t border-border grid grid-cols-2 sm:grid-cols-4 gap-3  text-[12px]">
               <div className="p-3 rounded-md border border-border bg-background">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="h-2 w-2 rounded-full bg-primary" />
@@ -120,7 +120,7 @@ export function Features() {
               </p>
             </div>
 
-            <div className="mt-6 font-mono text-[10px] space-y-2 border-t border-border pt-4">
+            <div className="mt-6  text-[10px] space-y-2 border-t border-border pt-4">
               <div className="flex items-center justify-between p-2 rounded bg-background border border-border">
                 <span className="text-muted-foreground">auth-middleware.ts</span>
                 <span className="text-green-600 dark:text-green-400">TypeScript</span>
@@ -155,7 +155,7 @@ export function Features() {
               </p>
             </div>
 
-            <div className="mt-6 font-mono text-[10px] bg-background p-3 rounded-md border border-border space-y-1">
+            <div className="mt-6  text-[10px] bg-background p-3 rounded-md border border-border space-y-1">
               <div className="text-green-600 dark:text-green-400">
                 + v3 — Added payment idempotency keys
               </div>
@@ -191,7 +191,7 @@ export function Features() {
               </p>
             </div>
 
-            <div className="mt-6 pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-4 font-mono text-[12px]">
+            <div className="mt-6 pt-4 border-t border-border grid grid-cols-1 sm:grid-cols-3 gap-4  text-[12px]">
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-4 w-4 text-green-500 shrink-0" />
                 <span className="text-foreground">Actor Attribution</span>

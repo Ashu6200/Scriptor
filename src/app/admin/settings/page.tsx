@@ -148,7 +148,7 @@ export default function AdminSettingsPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+        <div className="flex items-center gap-3 text-muted-foreground  text-sm">
           <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
           Loading settings...
         </div>

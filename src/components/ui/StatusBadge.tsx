@@ -13,7 +13,7 @@ const statusBadgeVariants = cva(
         danger: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20",
         info: "bg-primary/10 text-primary border-primary/20",
         muted:
-          "bg-muted/60 text-muted-foreground border-border/50 font-mono uppercase tracking-wider text-[10px]",
+          "bg-muted/60 text-muted-foreground border-border/50  uppercase tracking-wider text-[10px]",
       },
     },
     defaultVariants: {

@@ -10,11 +10,18 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error(error);
+    const isCacheOrChunkError =
+      error.message?.includes("ERR_CACHE_READ_FAILURE") ||
+      error.message?.includes("Loading chunk") ||
+      error.message?.includes("Failed to fetch dynamically imported module");
+
+    if (isCacheOrChunkError) {
+      window.location.reload();
+    }
   }, [error]);
 
   return (
-    <html>
+    <html lang="en">
       <body
         style={{
           margin: 0,

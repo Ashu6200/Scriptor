@@ -1,7 +1,7 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { Input } from "@/components/ui/input";
 import { useGetAdminTransactionsQuery } from "@/features/admin/api";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -129,7 +129,7 @@ export default function AdminTransactionsPage() {
                     key={tx.id}
                     className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors"
                   >
-                    <td className="px-5 py-3.5 text-xs font-mono text-muted-foreground whitespace-nowrap">
+                    <td className="px-5 py-3.5 text-xs  text-muted-foreground whitespace-nowrap">
                       {new Date(tx.createdAt).toLocaleDateString("en-IN", {
                         day: "2-digit",
                         month: "short",
@@ -140,10 +140,10 @@ export default function AdminTransactionsPage() {
                       <p className="text-sm font-medium text-foreground">{tx.user.name ?? "—"}</p>
                       <p className="text-xs text-muted-foreground">{tx.user.email}</p>
                     </td>
-                    <td className="px-5 py-3.5 font-mono font-semibold text-foreground whitespace-nowrap">
+                    <td className="px-5 py-3.5  font-semibold text-foreground whitespace-nowrap">
                       ₹{(tx.amount / 100).toLocaleString("en-IN")}
                     </td>
-                    <td className="px-5 py-3.5 text-xs font-mono text-muted-foreground uppercase">
+                    <td className="px-5 py-3.5 text-xs  text-muted-foreground uppercase">
                       {tx.method ?? "—"}
                     </td>
                     <td className="px-5 py-3.5">
@@ -156,7 +156,7 @@ export default function AdminTransactionsPage() {
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className="font-mono text-xs text-muted-foreground truncate max-w-32 block">
+                      <span className=" text-xs text-muted-foreground truncate max-w-32 block">
                         {tx.razorpayPaymentId ?? "—"}
                       </span>
                     </td>

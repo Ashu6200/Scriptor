@@ -17,7 +17,12 @@ const nextConfig: NextConfig = {
   reactCompiler: true,
 
   serverExternalPackages: ["@prisma/client", "bcryptjs", "pino", "pino-pretty"],
-
+  experimental: {
+    staleTimes: {
+      dynamic: 0,
+      static: 180,
+    },
+  },
   async redirects() {
     return [
       {

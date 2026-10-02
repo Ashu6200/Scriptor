@@ -381,7 +381,7 @@ export default function UserConsentsPage() {
             Active Policies
           </h2>
           {consents && (
-            <p className="text-xs font-mono text-muted-foreground">
+            <p className="text-xs  text-muted-foreground">
               {filteredEntries.length} of {consentEntries.length}
             </p>
           )}
@@ -389,7 +389,7 @@ export default function UserConsentsPage() {
 
         {consentsLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+            <div className="flex items-center gap-3 text-muted-foreground  text-sm">
               <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
               Loading consent preferences...
             </div>
@@ -417,11 +417,11 @@ export default function UserConsentsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold text-foreground">{state.policyName}</p>
-                      <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                      <span className="text-xs  text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                         {state.policyKey}
                       </span>
                       {state.policyVersion && (
-                        <span className="text-xs font-mono text-muted-foreground">
+                        <span className="text-xs  text-muted-foreground">
                           v{state.policyVersion}
                         </span>
                       )}
@@ -547,13 +547,13 @@ export default function UserConsentsPage() {
             Consent History
           </h2>
           {history?.meta && (
-            <p className="text-xs font-mono text-muted-foreground">{history.meta.total} events</p>
+            <p className="text-xs  text-muted-foreground">{history.meta.total} events</p>
           )}
         </div>
 
         {historyLoading ? (
           <div className="flex items-center justify-center py-10">
-            <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+            <div className="flex items-center gap-3 text-muted-foreground  text-sm">
               <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
               Loading history...
             </div>

@@ -104,7 +104,7 @@ export function VersionDiffViewer({
               <div>
                 <SheetTitle className="text-base font-semibold flex items-center gap-2">
                   <span>Version Comparison</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted font-mono font-medium text-muted-foreground">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-muted  font-medium text-muted-foreground">
                     v{comparedVersion.versionNumber} vs Current
                   </span>
                 </SheetTitle>
@@ -120,7 +120,7 @@ export function VersionDiffViewer({
             </div>
 
             <div className="flex items-center gap-3 self-end sm:self-auto">
-              <div className="flex items-center gap-1.5 font-mono text-[10px]">
+              <div className="flex items-center gap-1.5  text-[10px]">
                 <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-semibold">
                   +{diffResult.additions}
                 </span>
@@ -159,7 +159,7 @@ export function VersionDiffViewer({
           </div>
 
           {titleChanged && (
-            <div className="mt-3 p-2.5 rounded-lg border border-border/60 bg-muted/30 flex items-center gap-2 text-[10px] font-mono">
+            <div className="mt-3 p-2.5 rounded-lg border border-border/60 bg-muted/30 flex items-center gap-2 text-[10px] ">
               <span className="text-muted-foreground shrink-0">Title Diff:</span>
               <span className="px-1.5 py-0.5 rounded bg-rose-500/15 text-rose-600 dark:text-rose-400 line-through">
                 {comparedVersion.title}
@@ -172,7 +172,7 @@ export function VersionDiffViewer({
           )}
         </SheetHeader>
 
-        <div className="flex-1 overflow-auto font-mono text-[10px] bg-muted/10 select-text">
+        <div className="flex-1 overflow-auto  text-[10px] bg-muted/10 select-text">
           {!diffResult.hasChanges && !titleChanged ? (
             <div className="flex flex-col items-center justify-center h-full py-16 text-center text-muted-foreground">
               <Check className="h-8 w-8 text-emerald-500 mb-2" />
@@ -187,11 +187,11 @@ export function VersionDiffViewer({
               <div className="sticky top-0 z-10 grid grid-cols-2 border-b border-border/80 bg-muted/80 backdrop-blur-xs font-semibold text-[10px] text-muted-foreground">
                 <div className="px-4 py-2 border-r border-border/60 flex items-center justify-between">
                   <span>Older: Version {comparedVersion.versionNumber}</span>
-                  <span className="text-[10px] text-rose-500 font-mono">Original</span>
+                  <span className="text-[10px] text-rose-500 ">Original</span>
                 </div>
                 <div className="px-4 py-2 flex items-center justify-between">
                   <span>Newer: Current Active Document</span>
-                  <span className="text-[10px] text-emerald-500 font-mono">Current</span>
+                  <span className="text-[10px] text-emerald-500 ">Current</span>
                 </div>
               </div>
 
@@ -214,13 +214,13 @@ export function VersionDiffViewer({
                               : "text-foreground"
                         }`}
                       >
-                        <span className="w-9 shrink-0 text-right pr-3 select-none text-[10px] text-muted-foreground/60 font-mono">
+                        <span className="w-9 shrink-0 text-right pr-3 select-none text-[10px] text-muted-foreground/60 ">
                           {row.left.lineNumber ?? ""}
                         </span>
                         <span className="w-4 shrink-0 text-center select-none font-bold text-rose-500">
                           {leftDeleted ? "-" : ""}
                         </span>
-                        <pre className="flex-1 whitespace-pre-wrap break-all font-mono leading-relaxed pl-1">
+                        <pre className="flex-1 whitespace-pre-wrap break-all  leading-relaxed pl-1">
                           {row.left.text ?? ""}
                         </pre>
                       </div>
@@ -234,13 +234,13 @@ export function VersionDiffViewer({
                               : "text-foreground"
                         }`}
                       >
-                        <span className="w-9 shrink-0 text-right pr-3 select-none text-[10px] text-muted-foreground/60 font-mono">
+                        <span className="w-9 shrink-0 text-right pr-3 select-none text-[10px] text-muted-foreground/60 ">
                           {row.right.lineNumber ?? ""}
                         </span>
                         <span className="w-4 shrink-0 text-center select-none font-bold text-emerald-500">
                           {rightAdded ? "+" : ""}
                         </span>
-                        <pre className="flex-1 whitespace-pre-wrap break-all font-mono leading-relaxed pl-1">
+                        <pre className="flex-1 whitespace-pre-wrap break-all  leading-relaxed pl-1">
                           {row.right.text ?? ""}
                         </pre>
                       </div>
@@ -269,10 +269,10 @@ export function VersionDiffViewer({
                           : "text-foreground"
                     }`}
                   >
-                    <span className="w-8 shrink-0 text-right pr-2 select-none text-[10px] text-muted-foreground/60 font-mono">
+                    <span className="w-8 shrink-0 text-right pr-2 select-none text-[10px] text-muted-foreground/60 ">
                       {line.oldLineNumber ?? ""}
                     </span>
-                    <span className="w-8 shrink-0 text-right pr-3 select-none text-[10px] text-muted-foreground/60 font-mono">
+                    <span className="w-8 shrink-0 text-right pr-3 select-none text-[10px] text-muted-foreground/60 ">
                       {line.newLineNumber ?? ""}
                     </span>
                     <span
@@ -286,7 +286,7 @@ export function VersionDiffViewer({
                     >
                       {isAdded ? "+" : isDeleted ? "-" : " "}
                     </span>
-                    <pre className="flex-1 whitespace-pre-wrap break-all font-mono leading-relaxed pl-1">
+                    <pre className="flex-1 whitespace-pre-wrap break-all  leading-relaxed pl-1">
                       {line.text}
                     </pre>
                   </div>
@@ -297,7 +297,7 @@ export function VersionDiffViewer({
         </div>
 
         <SheetFooter className="p-3 sm:p-4 border-t border-border/60 bg-card/40 flex flex-row items-center justify-between gap-3 shrink-0">
-          <div className="text-[10px] text-muted-foreground font-mono hidden sm:block">
+          <div className="text-[10px] text-muted-foreground  hidden sm:block">
             {diffResult.totalChanges} total line{" "}
             {diffResult.totalChanges === 1 ? "change" : "changes"} detected
           </div>

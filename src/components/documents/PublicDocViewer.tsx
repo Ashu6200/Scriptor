@@ -51,11 +51,7 @@ interface PublicDocViewerProps {
   onHeadingsExtracted?: (headings: Array<{ id: string; text: string; level: number }>) => void;
 }
 
-export function PublicDocViewer({
-  content,
-  className,
-  onHeadingsExtracted,
-}: PublicDocViewerProps) {
+export function PublicDocViewer({ content, className, onHeadingsExtracted }: PublicDocViewerProps) {
   const { resolvedTheme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
   const isDark = resolvedTheme === "dark";
@@ -79,9 +75,7 @@ export function PublicDocViewer({
       securityLevel: "loose",
     });
 
-    const mermaidContainers = containerRef.current.querySelectorAll(
-      ".mermaid-block-container"
-    );
+    const mermaidContainers = containerRef.current.querySelectorAll(".mermaid-block-container");
 
     mermaidContainers.forEach((el, index) => {
       const pre = el.querySelector(".mermaid-code-hidden");
@@ -97,8 +91,7 @@ export function PublicDocViewer({
             wrapper.innerHTML = svg;
             el.appendChild(wrapper);
           })
-          .catch(() => {
-          });
+          .catch(() => {});
       }
     });
 
@@ -149,7 +142,7 @@ export function PublicDocViewer({
     <div
       ref={containerRef}
       className={cn(
-        "prose prose-zinc dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code:font-mono prose-code:text-primary prose-code:bg-muted/70 prose-code:px-1 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-muted/30 prose-pre:border prose-pre:border-border/60 prose-pre:p-4 prose-pre:rounded-xl",
+        "prose prose-zinc dark:prose-invert max-w-none prose-headings:font-bold prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-code: prose-code:text-primary prose-code:bg-muted/70 prose-code:px-1 prose-code:py-0.5 prose-code:rounded-md prose-pre:bg-muted/30 prose-pre:border prose-pre:border-border/60 prose-pre:p-4 prose-pre:rounded-xl",
         className
       )}
       dangerouslySetInnerHTML={{ __html: html }}

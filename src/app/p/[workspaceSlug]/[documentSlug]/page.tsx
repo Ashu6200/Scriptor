@@ -127,7 +127,7 @@ export default async function PublicDocPage({ params }: PublicDocPageProps) {
             href={`/p/${workspace.slug}/${prevDoc.slug}`}
             className="group flex flex-col p-4 rounded-xl border border-border/60 hover:border-primary/50 bg-card hover:bg-muted/40 transition-all sm:max-w-xs w-full"
           >
-            <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
+            <span className="text-[11px]  text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
               <ArrowLeft className="h-3 w-3 group-hover:-translate-x-1 transition-transform" />{" "}
               Previous
             </span>
@@ -144,9 +144,8 @@ export default async function PublicDocPage({ params }: PublicDocPageProps) {
             href={`/p/${workspace.slug}/${nextDoc.slug}`}
             className="group flex flex-col items-end text-right p-4 rounded-xl border border-border/60 hover:border-primary/50 bg-card hover:bg-muted/40 transition-all sm:max-w-xs w-full ml-auto"
           >
-            <span className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
-              Next{" "}
-              <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
+            <span className="text-[11px]  text-muted-foreground uppercase tracking-wider flex items-center gap-1 mb-1">
+              Next <ArrowRight className="h-3 w-3 group-hover:translate-x-1 transition-transform" />
             </span>
             <span className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
               {nextDoc.title}

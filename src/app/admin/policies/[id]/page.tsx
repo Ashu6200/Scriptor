@@ -40,7 +40,7 @@ export default function PolicyDetailPage({ params }: { params: Promise<{ id: str
   if (isLoading || !policy) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+        <div className="flex items-center gap-3 text-muted-foreground  text-sm">
           <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
           Loading policy...
         </div>
@@ -86,7 +86,7 @@ export default function PolicyDetailPage({ params }: { params: Promise<{ id: str
               <ScrollText className="h-6 w-6 text-primary" />
               {policy.name}
             </h1>
-            <p className="text-xs font-mono text-muted-foreground mt-0.5">{policy.key}</p>
+            <p className="text-xs  text-muted-foreground mt-0.5">{policy.key}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -282,7 +282,7 @@ export default function PolicyDetailPage({ params }: { params: Promise<{ id: str
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                   Full Policy Content
                 </p>
-                <div className="rounded-lg bg-muted/30 border border-border p-4 text-sm text-foreground whitespace-pre-wrap font-mono max-h-75 overflow-y-auto">
+                <div className="rounded-lg bg-muted/30 border border-border p-4 text-sm text-foreground whitespace-pre-wrap  max-h-75 overflow-y-auto">
                   {latestVersion.content}
                 </div>
               </div>

@@ -58,7 +58,7 @@ function VersionCard({ version }: { version: DpdpPolicyVersion }) {
     <div className="rounded-xl border border-border bg-card p-5 space-y-4">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold font-mono text-foreground">v{version.version}</span>
+          <span className="text-sm font-bold  text-foreground">v{version.version}</span>
           <span
             className={cn(
               "inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold",
@@ -139,7 +139,7 @@ function VersionCard({ version }: { version: DpdpPolicyVersion }) {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                   Effective From
                 </p>
-                <p className="text-sm text-foreground font-mono">
+                <p className="text-sm text-foreground ">
                   {format(new Date(version.effectiveFrom), "dd MMM yyyy, HH:mm")}
                 </p>
               </div>
@@ -149,7 +149,7 @@ function VersionCard({ version }: { version: DpdpPolicyVersion }) {
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1">
                   Effective Until
                 </p>
-                <p className="text-sm text-foreground font-mono">
+                <p className="text-sm text-foreground ">
                   {format(new Date(version.effectiveUntil), "dd MMM yyyy, HH:mm")}
                 </p>
               </div>
@@ -223,7 +223,7 @@ export default function PolicyVersionsPage({
   if (isLoading || !data) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
-        <div className="flex items-center gap-3 text-muted-foreground font-mono text-sm">
+        <div className="flex items-center gap-3 text-muted-foreground  text-sm">
           <span className="h-2 w-2 rounded-full bg-primary animate-ping" />
           Loading versions...
         </div>
@@ -251,7 +251,7 @@ export default function PolicyVersionsPage({
               <History className="h-6 w-6 text-primary" />
               Version History
             </h1>
-            <p className="text-xs font-mono text-muted-foreground mt-0.5 flex items-center gap-2">
+            <p className="text-xs  text-muted-foreground mt-0.5 flex items-center gap-2">
               <ScrollText className="h-3.5 w-3.5" />
               {policy.name}
               <span className="text-muted-foreground/50">·</span>
@@ -517,7 +517,7 @@ export default function PolicyVersionsPage({
         </div>
       ) : (
         <div className="space-y-4">
-          <p className="text-xs font-mono text-muted-foreground">
+          <p className="text-xs  text-muted-foreground">
             {versions.length} version{versions.length !== 1 ? "s" : ""} — newest first
           </p>
           {versions.map((version) => (

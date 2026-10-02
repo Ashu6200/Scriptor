@@ -1,7 +1,7 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
 import { PageSkeleton } from "@/components/ui/PageSkeleton";
+import { Input } from "@/components/ui/input";
 import { useGetAdminAnalyticsQuery } from "@/features/admin/api";
 import type { AdminAnalytics } from "@/features/admin/api";
 import { Activity, CreditCard, IndianRupee, TrendingUp, Users } from "lucide-react";
@@ -57,9 +57,7 @@ function KPICard({ label, value, icon: Icon, sub }: KPICardProps) {
           <Icon className="h-4 w-4 text-primary" />
         </div>
       </div>
-      <p className="text-2xl lg:text-3xl font-bold font-mono text-foreground leading-none">
-        {value}
-      </p>
+      <p className="text-2xl lg:text-3xl font-bold  text-foreground leading-none">{value}</p>
       {sub && <p className="text-xs text-muted-foreground mt-2">{sub}</p>}
     </div>
   );
@@ -101,7 +99,7 @@ function BarChart({ series, label, formatValue }: BarChartProps) {
         })}
       </div>
       {showLabels && (
-        <div className="flex justify-between mt-2 text-[10px] text-muted-foreground font-mono px-1 overflow-hidden">
+        <div className="flex justify-between mt-2 text-[10px] text-muted-foreground  px-1 overflow-hidden">
           {series.map((d, i) => {
             const show =
               series.length <= 7 ||
@@ -241,7 +239,7 @@ export default function AdminAnalyticsPage() {
           <div className="rounded-xl border border-border bg-card p-5">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-base font-semibold text-foreground">Revenue Trend</h2>
-              <span className="text-xs text-muted-foreground font-mono bg-muted px-2 py-0.5 rounded-full">
+              <span className="text-xs text-muted-foreground  bg-muted px-2 py-0.5 rounded-full">
                 INR / day
               </span>
             </div>
@@ -284,7 +282,7 @@ export default function AdminAnalyticsPage() {
                       <span className="text-[10px] font-semibold uppercase tracking-wider opacity-80">
                         {status.replace("_", " ")}
                       </span>
-                      <span className="text-2xl font-bold font-mono">{count.toLocaleString()}</span>
+                      <span className="text-2xl font-bold ">{count.toLocaleString()}</span>
                     </div>
                   );
                 })}
@@ -309,7 +307,7 @@ export default function AdminAnalyticsPage() {
                       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                         {pm.method?.toUpperCase() ?? "UNKNOWN"}
                       </p>
-                      <p className="text-lg font-bold font-mono text-foreground">
+                      <p className="text-lg font-bold  text-foreground">
                         ₹{pm.amountINR.toLocaleString("en-IN")}
                       </p>
                       <p className="text-xs text-muted-foreground">{pm.count} transactions</p>

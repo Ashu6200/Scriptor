@@ -209,7 +209,7 @@ export default function AuditPage() {
                   ? "Cryptographic Hash Chain: VERIFIED"
                   : "Cryptographic Tampering Detected!"}
               </p>
-              <p className="opacity-90 font-mono text-[10px] mt-0.5">
+              <p className="opacity-90  text-[10px] mt-0.5">
                 {verification.valid
                   ? `${verification.verifiedCount} consecutive blocks validated using SHA-256 sequential parent hashing.`
                   : verification.error || "Hash mismatch found in audit chain."}
@@ -218,7 +218,7 @@ export default function AuditPage() {
           </div>
 
           {verification.latestHash && (
-            <div className="font-mono text-[10px] px-2 py-1 rounded bg-background/50 border border-border/40 shrink-0 self-start sm:self-auto">
+            <div className=" text-[10px] px-2 py-1 rounded bg-background/50 border border-border/40 shrink-0 self-start sm:self-auto">
               Latest Hash: {verification.latestHash.substring(0, 16)}...
             </div>
           )}
@@ -229,7 +229,7 @@ export default function AuditPage() {
       <div className="flex flex-wrap items-center gap-3">
         <select
           {...form.register("action")}
-          className="rounded-md border bg-transparent px-3 py-1.5 text-[10px] font-mono"
+          className="rounded-md border bg-transparent px-3 py-1.5 text-[10px] "
         >
           <option value="">All Actions</option>
           {ACTIONS.map((a) => (
@@ -240,7 +240,7 @@ export default function AuditPage() {
         </select>
         <select
           {...form.register("resourceType")}
-          className="rounded-md border bg-transparent px-3 py-1.5 text-[10px] font-mono"
+          className="rounded-md border bg-transparent px-3 py-1.5 text-[10px] "
         >
           <option value="">All Resources</option>
           {RESOURCE_TYPES.map((r) => (
@@ -250,7 +250,7 @@ export default function AuditPage() {
           ))}
         </select>
 
-        <span className="text-[10px] text-muted-foreground ml-auto font-mono">
+        <span className="text-[10px] text-muted-foreground ml-auto ">
           {data?.meta.total ?? 0} total records
         </span>
       </div>
@@ -274,11 +274,11 @@ export default function AuditPage() {
 
               return (
                 <tr key={log.id} className="hover:bg-muted/30 transition-colors">
-                  <td className="p-4 text-muted-foreground whitespace-nowrap text-[10px] font-mono">
+                  <td className="p-4 text-muted-foreground whitespace-nowrap text-[10px] ">
                     {formatDistanceToNow(new Date(log.createdAt), { addSuffix: true })}
                   </td>
                   <td className="p-4">
-                    <span className="text-[10px] px-2 py-0.5 rounded bg-muted font-mono uppercase tracking-wider font-semibold">
+                    <span className="text-[10px] px-2 py-0.5 rounded bg-muted  uppercase tracking-wider font-semibold">
                       {log.action}
                     </span>
                   </td>
@@ -288,7 +288,7 @@ export default function AuditPage() {
                         {log.actor?.name || log.actor?.email?.split("@")[0] || "User"}
                       </span>
                       {log.actor?.email && (
-                        <span className="text-[10px] text-muted-foreground font-mono truncate max-w-40">
+                        <span className="text-[10px] text-muted-foreground  truncate max-w-40">
                           {log.actor.email}
                         </span>
                       )}
@@ -299,7 +299,7 @@ export default function AuditPage() {
                       <span className="text-[10px] font-semibold text-foreground">
                         {log.resourceType}
                       </span>
-                      <span className="text-[10px] text-muted-foreground font-mono truncate max-w-44">
+                      <span className="text-[10px] text-muted-foreground  truncate max-w-44">
                         {log.resourceId ?? "—"}
                       </span>
                     </div>
@@ -309,7 +309,7 @@ export default function AuditPage() {
                       <button
                         type="button"
                         onClick={() => setSelectedProof(log)}
-                        className="inline-flex items-center gap-1.5 px-2 py-1 rounded border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary transition-colors text-[10px] font-mono"
+                        className="inline-flex items-center gap-1.5 px-2 py-1 rounded border border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary transition-colors text-[10px] "
                         title="Click to view full SHA-256 cryptographic proof"
                       >
                         <Fingerprint className="h-3 w-3" />
@@ -319,14 +319,12 @@ export default function AuditPage() {
                         </span>
                       </button>
                     ) : (
-                      <span className="text-[10px] text-muted-foreground/60 font-mono italic">
+                      <span className="text-[10px] text-muted-foreground/60  italic">
                         Legacy Log
                       </span>
                     )}
                   </td>
-                  <td className="p-4 text-muted-foreground font-mono text-[10px]">
-                    {log.ipAddress ?? "—"}
-                  </td>
+                  <td className="p-4 text-muted-foreground  text-[10px]">{log.ipAddress ?? "—"}</td>
                 </tr>
               );
             })}
@@ -357,7 +355,7 @@ export default function AuditPage() {
             <ChevronLeft className="h-4 w-4 mr-1" />
             Previous
           </Button>
-          <span className="text-[10px] text-muted-foreground font-mono">
+          <span className="text-[10px] text-muted-foreground ">
             Page {page} of {totalPages}
           </span>
           <Button
@@ -392,7 +390,7 @@ export default function AuditPage() {
           </DialogHeader>
 
           {selectedProof?.details?._integrity && (
-            <div className="space-y-3 text-[10px] font-mono bg-muted/20 p-4 rounded-xl border border-border/60">
+            <div className="space-y-3 text-[10px]  bg-muted/20 p-4 rounded-xl border border-border/60">
               <div>
                 <span className="text-muted-foreground block text-[10px]">Algorithm:</span>
                 <span className="text-emerald-500 font-semibold">

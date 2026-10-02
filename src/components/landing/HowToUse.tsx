@@ -126,7 +126,7 @@ export function HowToUse() {
             initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[12px] font-mono text-primary"
+            className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1 text-[12px]  text-primary"
           >
             <span>WORKFLOW OVERVIEW</span>
           </motion.div>
@@ -169,7 +169,7 @@ export function HowToUse() {
               >
                 <div className="flex items-center justify-between mb-4">
                   <span
-                    className={`font-mono tex-sm font-bold ${
+                    className={` tex-sm font-bold ${
                       isActive ? "text-primary" : "text-muted-foreground"
                     }`}
                   >
@@ -192,7 +192,7 @@ export function HowToUse() {
         <div className="rounded-lg border border-border bg-background overflow-hidden grid grid-cols-1 lg:grid-cols-12 divide-y lg:divide-y-0 lg:divide-x divide-border">
           <div className="lg:col-span-5 p-8 flex flex-col justify-between">
             <div>
-              <div className="flex items-center gap-2 mb-4 font-mono text-[12px] text-primary">
+              <div className="flex items-center gap-2 mb-4  text-[12px] text-primary">
                 <span>PHASE {steps[activeStep].number} OF 04</span>
               </div>
               <h3
@@ -206,13 +206,13 @@ export function HowToUse() {
               </p>
             </div>
 
-            <div className="p-4 rounded-lg border border-border bg-card font-mono tex-sm text-foreground flex items-center justify-between">
+            <div className="p-4 rounded-lg border border-border bg-card  tex-sm text-foreground flex items-center justify-between">
               <span className="text-primary">→ {steps[activeStep].highlight}</span>
               <ArrowRight className="h-4 w-4 text-muted-foreground" />
             </div>
           </div>
 
-          <div className="lg:col-span-7 p-6 bg-card font-mono tex-sm leading-[1.7] overflow-x-auto flex flex-col justify-between">
+          <div className="lg:col-span-7 p-6 bg-card  tex-sm leading-[1.7] overflow-x-auto flex flex-col justify-between">
             <div className="flex items-center justify-between pb-3 mb-4 border-b border-border text-[12px] text-muted-foreground">
               <span className="text-foreground font-semibold">{steps[activeStep].title}</span>
               <span className="text-primary">System Verification</span>

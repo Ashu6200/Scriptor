@@ -13,7 +13,7 @@ export default function LegalLayout({
       <header className="w-full flex items-center justify-between px-6 py-4 sm:px-10 border-b border-border/40">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors group"
+          className="inline-flex items-center gap-2 text-xs  text-muted-foreground hover:text-foreground transition-colors group"
         >
           <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-1" />
           <span>Back to home</span>
@@ -34,7 +34,7 @@ export default function LegalLayout({
 
       <footer className="w-full px-6 py-4 sm:px-10 text-center text-xs text-muted-foreground border-t border-border/40 flex flex-col sm:flex-row items-center justify-between gap-2">
         <p>© 2026 Scriptor. Collaborative engineering knowledge base.</p>
-        <div className="flex items-center gap-4 text-[11px] font-mono">
+        <div className="flex items-center gap-4 text-[11px] ">
           <Link href="/terms" className="hover:text-foreground transition-colors">
             Terms
           </Link>

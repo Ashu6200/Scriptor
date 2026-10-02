@@ -104,7 +104,7 @@ export function ConsentGateModal() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-semibold text-foreground">{policy.name}</p>
-                      <span className="text-xs font-mono text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                      <span className="text-xs  text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                         v{version.version}
                       </span>
                     </div>

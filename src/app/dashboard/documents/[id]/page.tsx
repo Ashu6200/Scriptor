@@ -37,8 +37,8 @@ import {
   useGetDocumentVersionsQuery,
   useUpdateDocumentMutation,
 } from "@/features/document/api";
-import { CommentsPanel } from "@/features/document/components/CommentsPanel";
 import { AiAssistantModal } from "@/features/document/components/AiAssistantModal";
+import { CommentsPanel } from "@/features/document/components/CommentsPanel";
 import { Editor } from "@/features/document/components/Editor";
 import { TableOfContents } from "@/features/document/components/TableOfContents";
 import { Toolbar } from "@/features/document/components/Toolbar";
@@ -276,7 +276,7 @@ export default function DocumentEditorPage() {
     [updateDocument, docWorkspaceId, id]
   );
 
-  const debouncedSave = useAutosave(save, 1000);
+  const debouncedSave = useAutosave(save, 5000);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -361,7 +361,7 @@ export default function DocumentEditorPage() {
           <div className="flex items-center gap-2 font-semibold text-[10px] text-muted-foreground">
             <BookOpen className="h-4 w-4 text-primary" />
             <span className="font-semibold text-foreground tracking-tight">Navigation</span>
-            <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full font-mono">
+            <span className="text-[10px] bg-muted px-1.5 py-0.5 rounded-full ">
               {flatList.length}
             </span>
           </div>
@@ -440,7 +440,7 @@ export default function DocumentEditorPage() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 3 }}
                   transition={{ duration: 0.15 }}
-                  className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/50 border border-border/60 px-2.5 py-1 rounded-full font-mono shrink-0"
+                  className="flex items-center gap-1.5 text-[10px] text-muted-foreground bg-muted/50 border border-border/60 px-2.5 py-1 rounded-full  shrink-0"
                 >
                   <span
                     className={cn(
@@ -452,7 +452,7 @@ export default function DocumentEditorPage() {
                 </motion.div>
               </AnimatePresence>
 
-              <div className="hidden xl:flex items-center gap-2 text-[10px] text-muted-foreground/70 font-mono shrink-0">
+              <div className="hidden xl:flex items-center gap-2 text-[10px] text-muted-foreground/70  shrink-0">
                 <span>{stats.wordCount} words</span>
                 <span>•</span>
                 <span>{stats.readTime} min read</span>
@@ -654,7 +654,7 @@ export default function DocumentEditorPage() {
 
               {showPreview && (
                 <div className="sticky top-0 bg-background/90 backdrop-blur-sm border-b border-border/50 px-6 py-2 flex items-center justify-between z-10">
-                  <span className="text-[10px] font-mono font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                  <span className="text-[10px]  font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                     <FileCode className="h-3 w-3" /> Editor
                   </span>
                 </div>
@@ -821,7 +821,7 @@ function HistoryPanel({
                     <span className="text-[10px] font-semibold text-foreground">
                       Version {version.versionNumber ?? versions.length - idx}
                     </span>
-                    <span className="text-[10px] text-muted-foreground font-mono">
+                    <span className="text-[10px] text-muted-foreground ">
                       {version.createdAt &&
                         formatDistanceToNow(new Date(version.createdAt), {
                           addSuffix: true,
@@ -939,9 +939,7 @@ function ShareDialog({
   const docSlug = (document as { slug?: string })?.slug || documentId;
 
   const publicPortalUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/p/${wsSlug}/${docSlug}`
-      : "";
+    typeof window !== "undefined" ? `${window.location.origin}/p/${wsSlug}/${docSlug}` : "";
 
   const internalUrl =
     typeof window !== "undefined"
@@ -1033,9 +1031,13 @@ function ShareDialog({
                   type="text"
                   readOnly
                   value={publicPortalUrl}
-                  className="flex-1 bg-background border border-border/60 rounded-lg px-3 py-1.5 text-xs font-mono text-foreground focus:outline-none"
+                  className="flex-1 bg-background border border-border/60 rounded-lg px-3 py-1.5 text-xs  text-foreground focus:outline-none"
                 />
-                <Button size="sm" onClick={handleCopyPublic} className="text-xs h-8 gap-1.5 shrink-0">
+                <Button
+                  size="sm"
+                  onClick={handleCopyPublic}
+                  className="text-xs h-8 gap-1.5 shrink-0"
+                >
                   {isCopiedPublic ? (
                     <>
                       <Check className="h-3.5 w-3.5 text-emerald-400" /> Copied
@@ -1060,7 +1062,7 @@ function ShareDialog({
                 type="text"
                 readOnly
                 value={internalUrl}
-                className="flex-1 bg-muted/40 border border-border/50 rounded-lg px-2.5 py-1 text-[11px] font-mono text-muted-foreground focus:outline-none"
+                className="flex-1 bg-muted/40 border border-border/50 rounded-lg px-2.5 py-1 text-[11px]  text-muted-foreground focus:outline-none"
               />
               <Button
                 variant="outline"
@@ -1295,7 +1297,7 @@ function PrevNextNav({
         >
           <ArrowLeft className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:-translate-x-1 transition-transform shrink-0" />
           <div className="flex flex-col min-w-0 text-left">
-            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+            <span className="text-[10px]  text-muted-foreground uppercase tracking-wider">
               Previous
             </span>
             <span className="text-[10px] font-semibold text-foreground group-hover:text-primary transition-colors truncate">
@@ -1313,7 +1315,7 @@ function PrevNextNav({
           className="group flex items-center justify-end gap-3 rounded-lg border border-border/60 bg-card/80 px-3.5 py-2 hover:border-primary/50 hover:bg-card hover:shadow-xs transition-all duration-200 text-right sm:col-start-2"
         >
           <div className="flex flex-col min-w-0 text-right">
-            <span className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+            <span className="text-[10px]  text-muted-foreground uppercase tracking-wider">
               Next
             </span>
             <span className="text-[10px] font-semibold text-foreground group-hover:text-primary transition-colors truncate">

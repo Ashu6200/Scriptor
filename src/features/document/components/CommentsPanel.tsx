@@ -2,11 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import {
+  type Comment,
   useCreateCommentMutation,
   useDeleteCommentMutation,
   useGetCommentsQuery,
   useResolveCommentMutation,
-  type Comment,
 } from "@/features/document/api";
 import { formatDistanceToNow } from "date-fns";
 import { Check, MessageSquare, Reply, Trash2, X } from "lucide-react";
@@ -195,7 +195,7 @@ export function CommentsPanel({ workspaceId, documentId, currentUserId }: Commen
         <MessageSquare className="h-4 w-4 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">Comments</h3>
         {openCount > 0 && (
-          <span className="ml-auto text-[10px] font-mono font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
+          <span className="ml-auto text-[10px]  font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded">
             {openCount} open
           </span>
         )}

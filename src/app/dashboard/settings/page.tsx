@@ -284,12 +284,12 @@ export default function SettingsPage() {
                     <p className="text-sm font-medium text-foreground flex items-center gap-2">
                       {parseUserAgent(s.userAgent)}
                       {s.isCurrent && (
-                        <span className="text-[10px] font-mono bg-primary/10 text-primary px-1.5 py-0.5 rounded-full border border-primary/20">
+                        <span className="text-[10px]  bg-primary/10 text-primary px-1.5 py-0.5 rounded-full border border-primary/20">
                           Current
                         </span>
                       )}
                     </p>
-                    <p className="text-[11px] text-muted-foreground font-mono truncate">
+                    <p className="text-[11px] text-muted-foreground  truncate">
                       {s.ipAddress ?? "Unknown IP"} ·{" "}
                       {new Date(s.updatedAt).toLocaleDateString("en-IN", {
                         day: "2-digit",

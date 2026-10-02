@@ -38,7 +38,7 @@ export function AdminSidebar() {
         </div>
         <div className="flex flex-col">
           <span className="text-sm font-bold text-foreground tracking-tight">Mission Control</span>
-          <span className="text-[10px] font-mono text-primary font-semibold tracking-widest uppercase">
+          <span className="text-[10px]  text-primary font-semibold tracking-widest uppercase">
             Platform Admin
           </span>
         </div>
