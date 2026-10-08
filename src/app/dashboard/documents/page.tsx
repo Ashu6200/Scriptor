@@ -1,5 +1,6 @@
 "use client";
 
+import { DocumentFormFields } from "@/components/documents/DocumentFormFields";
 import { UpgradeModal } from "@/components/modals/UpgradeModal";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
@@ -22,9 +23,11 @@ import {
   useGetDocumentTreeQuery,
   useGetDocumentsQuery,
 } from "@/features/document/api";
+import { saveOfflineDocument } from "@/features/document/documentSlice";
 import { useGetProfileQuery } from "@/features/user/api";
 import { useGetWorkspacesQuery } from "@/features/workspace/api";
 import { getPlanEntitlements } from "@/lib/client-entitlements";
+import { parseIntervalToSeconds } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -40,12 +43,33 @@ import {
 import Link from "next/link";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useDispatch } from "react-redux";
 import { toast } from "sonner";
 import * as z from "zod";
 
 const createDocSchema = z.object({
   title: z.string().min(1, "Title is required").max(255, "Title too long"),
+  updateMode: z.enum(["auto", "manual"]).default("manual"),
+  updateInterval: z.string().optional(),
+  slo: z.string().optional(),
 });
+
+const formSchema = createDocSchema.refine(
+  (data) => {
+    if (data.updateMode === "auto") {
+      if (!data.updateInterval || !data.updateInterval.trim()) return false;
+      const secs = parseIntervalToSeconds(data.updateInterval);
+      return secs !== null && secs > 0;
+    }
+    return true;
+  },
+  {
+    message: "Valid update interval is required for auto mode (e.g. 30s, 5m, 1h)",
+    path: ["updateInterval"],
+  }
+);
+
+type FormValues = z.infer<typeof createDocSchema>;
 
 export default function DocumentsPage() {
   const {
@@ -69,12 +93,22 @@ export default function DocumentsPage() {
   });
   const [createDocument] = useCreateDocumentMutation();
   const [showCreateDoc, setShowCreateDoc] = useState(false);
+  const [parentDoc, setParentDoc] = useState<{ id: string; title: string } | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  const form = useForm<z.infer<typeof createDocSchema>>({
-    resolver: zodResolver(createDocSchema),
-    defaultValues: { title: "Untitled Document" },
+  const dispatch = useDispatch();
+
+  const form = useForm({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      title: "Untitled Document",
+      updateMode: "manual",
+      updateInterval: "",
+      slo: "",
+    },
   });
+
+  const watchUpdateMode = form.watch("updateMode");
 
   const isLoading = isLoadingWorkspaces || isLoadingDocuments;
   const documents = data?.data || [];
@@ -83,29 +117,60 @@ export default function DocumentsPage() {
   const planLimits = getPlanEntitlements(profile?.subscriptionPlan, isAdmin);
   const isAtDocLimit = documents.length >= planLimits.maxDocuments;
 
-  const handleNewDocumentClick = () => {
+  const handleNewDocumentClick = (parent?: { id: string; title: string }) => {
     if (isAtDocLimit) {
       setShowUpgradeModal(true);
     } else {
+      setParentDoc(parent || null);
+      if (parent) {
+        form.setValue("title", "Untitled Subpage");
+      } else {
+        form.setValue("title", "Untitled Document");
+      }
       setShowCreateDoc(true);
     }
   };
 
-  const onCreateSubmit = async (values: z.infer<typeof createDocSchema>) => {
+  const onCreateSubmit = async (values: FormValues) => {
     if (!primaryWorkspace?.id) return;
+
+    const updateIntervalSeconds =
+      values.updateMode === "auto" ? parseIntervalToSeconds(values.updateInterval) : null;
+
     try {
-      await createDocument({
+      const newDoc = await createDocument({
         workspaceId: primaryWorkspace.id,
         title: values.title.trim(),
+        parentId: parentDoc?.id,
+        updateMode: values.updateMode,
+        updateIntervalSeconds,
       }).unwrap();
-      toast.success("Document created.");
-      form.reset({ title: "Untitled Document" });
+
+      dispatch(
+        saveOfflineDocument({
+          id: newDoc.id,
+          title: newDoc.title,
+          updateMode: values.updateMode,
+          updateInterval: values.updateInterval,
+          slo: values.slo,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+      );
+
+      toast.success(
+        parentDoc ? `Sub-document created under "${parentDoc.title}"` : "Document created."
+      );
+      form.reset({ title: "Untitled Document", updateMode: "manual", updateInterval: "", slo: "" });
+      setParentDoc(null);
       setShowCreateDoc(false);
     } catch (err: unknown) {
       const errorObj = err as { status?: number };
       if (errorObj?.status === 402) {
         setShowCreateDoc(false);
         setShowUpgradeModal(true);
+      } else {
+        toast.error("Failed to create document.");
       }
     }
   };
@@ -143,7 +208,7 @@ export default function DocumentsPage() {
               <List className="h-4 w-4" />
             </button>
           </div>
-          <Button onClick={handleNewDocumentClick}>
+          <Button onClick={() => handleNewDocumentClick()}>
             {isAtDocLimit ? (
               <Zap className="mr-2 h-4 w-4 text-amber-400 fill-amber-400" />
             ) : (
@@ -207,13 +272,20 @@ export default function DocumentsPage() {
       ) : (
         <div className="rounded-xl border">
           {tree && tree.length > 0 ? (
-            tree.map((item) => <TreeRow key={item.id} item={item} depth={0} />)
+            tree.map((item) => (
+              <TreeRow
+                key={item.id}
+                item={item}
+                depth={0}
+                onAddSubPage={(parent) => handleNewDocumentClick(parent)}
+              />
+            ))
           ) : (
             <EmptyState
               icon={FolderOpen}
               title="No documents yet"
               description="Create your first document to start building your knowledge base."
-              action={{ label: "New Document", onClick: handleNewDocumentClick }}
+              action={{ label: "New Document", onClick: () => handleNewDocumentClick() }}
             />
           )}
         </div>
@@ -221,32 +293,32 @@ export default function DocumentsPage() {
 
       <BottomDrawer
         open={showCreateDoc}
-        onOpenChange={setShowCreateDoc}
-        title="Create Document"
-        description="Add a new document to your workspace."
+        onOpenChange={(open) => {
+          setShowCreateDoc(open);
+          if (!open) setParentDoc(null);
+        }}
+        title={parentDoc ? "Create Sub-Document" : "Create Document"}
+        description={
+          parentDoc
+            ? `Creating a sub-document under "${parentDoc.title}"`
+            : `Add a new document to workspace "${primaryWorkspace?.name || "Default Workspace"}"`
+        }
         footer={
-          <Button onClick={form.handleSubmit(onCreateSubmit)} className="w-full">
-            Create Document
+          <Button
+            onClick={form.handleSubmit(onCreateSubmit)}
+            className="w-full h-11 text-xs font-bold rounded-xl shadow-md gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {parentDoc ? "Create Sub-Document" : "Create Document"}
           </Button>
         }
       >
         <Form {...form}>
-          <FormField
-            control={form.control}
-            name="title"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Document Title</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Untitled Document"
-                    onKeyDown={(e) => e.key === "Enter" && form.handleSubmit(onCreateSubmit)()}
-                    {...field}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          <DocumentFormFields
+            form={form}
+            onSubmit={form.handleSubmit(onCreateSubmit)}
+            parentDoc={parentDoc}
+            workspaceName={primaryWorkspace?.name || "Default Workspace"}
           />
         </Form>
       </BottomDrawer>
@@ -262,18 +334,27 @@ export default function DocumentsPage() {
   );
 }
 
-function TreeRow({ item, depth }: { item: DocumentTreeItem; depth: number }) {
+function TreeRow({
+  item,
+  depth,
+  onAddSubPage,
+}: {
+  item: DocumentTreeItem;
+  depth: number;
+  onAddSubPage: (parent: { id: string; title: string }) => void;
+}) {
   const [open, setOpen] = useState(true);
   const hasChildren = item.children && item.children.length > 0;
 
   return (
     <div>
       <div
-        className="flex items-center gap-2 px-4 py-2.5 hover:bg-muted/50 transition-colors border-b border-border last:border-b-0"
+        className="group flex items-center gap-2 px-4 py-2.5 hover:bg-muted/50 transition-colors border-b border-border last:border-b-0"
         style={{ paddingLeft: `${depth * 1.5 + 1}rem` }}
       >
         {hasChildren ? (
           <button
+            type="button"
             onClick={() => setOpen((o) => !o)}
             className="h-5 w-5 flex items-center justify-center rounded hover:bg-muted text-muted-foreground"
           >
@@ -291,10 +372,25 @@ function TreeRow({ item, depth }: { item: DocumentTreeItem; depth: number }) {
         >
           {item.title}
         </Link>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onAddSubPage({ id: item.id, title: item.title });
+          }}
+          className="h-7 text-xs opacity-80 group-hover:opacity-100 transition-opacity"
+        >
+          <Plus className="h-3.5 w-3.5 mr-1" />
+          Subpage
+        </Button>
       </div>
       {hasChildren &&
         open &&
-        item.children.map((child) => <TreeRow key={child.id} item={child} depth={depth + 1} />)}
+        item.children.map((child) => (
+          <TreeRow key={child.id} item={child} depth={depth + 1} onAddSubPage={onAddSubPage} />
+        ))}
     </div>
   );
 }

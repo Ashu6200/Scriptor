@@ -1,6 +1,8 @@
 "use client";
 
+import { DocumentFormFields } from "@/components/documents/DocumentFormFields";
 import { VersionDiffViewer } from "@/components/documents/VersionDiffViewer";
+import { BottomDrawer } from "@/components/ui/bottom-drawer";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +19,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
@@ -42,11 +53,17 @@ import { CommentsPanel } from "@/features/document/components/CommentsPanel";
 import { Editor } from "@/features/document/components/Editor";
 import { TableOfContents } from "@/features/document/components/TableOfContents";
 import { Toolbar } from "@/features/document/components/Toolbar";
+import {
+  saveOfflineDocument,
+  updateOfflineDocumentContent,
+} from "@/features/document/documentSlice";
 import { downloadFile, tiptapToMarkdown, tiptapToPlainText } from "@/features/document/export";
 import { useGetProfileQuery } from "@/features/user/api";
 import { useGetWorkspacesQuery } from "@/features/workspace/api";
 import { useAutosave } from "@/hooks/useAutosave";
-import { cn } from "@/lib/utils";
+import { cn, parseIntervalToSeconds } from "@/lib/utils";
+import type { RootState } from "@/store";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { type JSONContent, generateHTML } from "@tiptap/core";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
@@ -87,6 +104,7 @@ import {
   PanelLeft,
   Plus,
   Search,
+  Settings,
   Share2,
   Sparkles,
   Trash2,
@@ -94,12 +112,15 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
+import * as z from "zod";
 
 const previewExtensions = [
-  StarterKit,
-  Underline,
-  TiptapLink,
+  StarterKit.configure({
+    link: { openOnClick: true },
+  }),
   Image,
   Highlight,
   TextAlign.configure({ types: ["heading", "paragraph"] }),
@@ -110,6 +131,35 @@ const previewExtensions = [
   TableHeader,
   TableCell,
 ];
+
+const createSubDocSchema = z.object({
+  title: z.string().min(1, "Title is required").max(255, "Title too long"),
+  updateMode: z.enum(["auto", "manual"]).default("manual"),
+  updateInterval: z.string().optional(),
+  slo: z.string().optional(),
+});
+
+const subDocFormSchema = createSubDocSchema.refine(
+  (data) => {
+    if (data.updateMode === "auto") {
+      if (!data.updateInterval || !data.updateInterval.trim()) return false;
+      const secs = parseIntervalToSeconds(data.updateInterval);
+      return secs !== null && secs > 0;
+    }
+    return true;
+  },
+  {
+    message: "Valid update interval is required for auto mode (e.g. 30s, 5m, 1h)",
+    path: ["updateInterval"],
+  }
+);
+
+const docSettingsSchema = z.object({
+  title: z.string().min(1, "Title is required").max(255, "Title too long"),
+  updateMode: z.enum(["auto", "manual"]).default("manual"),
+  updateInterval: z.string().optional(),
+  slo: z.string().optional(),
+});
 
 function jsonToHtml(raw: string | null | undefined): string {
   if (!raw) return "";
@@ -201,6 +251,109 @@ export default function DocumentEditorPage() {
   const [showPreview, setShowPreview] = useState(false);
   const [showToc, setShowToc] = useState(false);
   const [showComments, setShowComments] = useState(false);
+  const [showCreateSubDoc, setShowCreateSubDoc] = useState(false);
+  const [showDocSettings, setShowDocSettings] = useState(false);
+
+  const dispatch = useDispatch();
+
+  const docSettingsForm = useForm({
+    resolver: zodResolver(docSettingsSchema),
+    defaultValues: {
+      title: document?.title || "",
+      updateMode: (document?.updateMode as "auto" | "manual") || "manual",
+      updateInterval: document?.updateIntervalSeconds ? `${document.updateIntervalSeconds}s` : "",
+      slo: document?.slo || "",
+    },
+  });
+  const watchDocSettingsMode = docSettingsForm.watch("updateMode");
+
+  useEffect(() => {
+    if (document) {
+      docSettingsForm.reset({
+        title: document.title || "",
+        updateMode: (document.updateMode as "auto" | "manual") || "manual",
+        updateInterval: document.updateIntervalSeconds ? `${document.updateIntervalSeconds}s` : "",
+        slo: document.slo || "",
+      });
+    }
+  }, [document, docSettingsForm]);
+
+  const onDocSettingsSubmit = async (values: z.infer<typeof docSettingsSchema>) => {
+    if (!docWorkspaceId || docWorkspaceId === "all") return;
+    const updateIntervalSeconds =
+      values.updateMode === "auto" ? parseIntervalToSeconds(values.updateInterval) : null;
+
+    try {
+      await updateDocument({
+        workspaceId: docWorkspaceId,
+        id,
+        title: values.title.trim(),
+        updateMode: values.updateMode,
+        updateIntervalSeconds,
+        slo: values.slo,
+      }).unwrap();
+
+      setTitle(values.title.trim());
+      toast.success("Document settings updated.");
+      setShowDocSettings(false);
+    } catch {
+      toast.error("Failed to update document settings");
+    }
+  };
+
+  const subDocForm = useForm({
+    resolver: zodResolver(subDocFormSchema),
+    defaultValues: { title: "Untitled Subpage", updateMode: "manual", updateInterval: "", slo: "" },
+  });
+  const watchSubDocUpdateMode = subDocForm.watch("updateMode");
+
+  const onCreateSubDocSubmit = async (values: z.infer<typeof createSubDocSchema>) => {
+    if (!docWorkspaceId || docWorkspaceId === "all") return;
+    const updateIntervalSeconds =
+      values.updateMode === "auto" ? parseIntervalToSeconds(values.updateInterval) : null;
+
+    try {
+      const result = await createDocument({
+        workspaceId: docWorkspaceId,
+        title: values.title.trim(),
+        parentId: id,
+        updateMode: values.updateMode,
+        updateIntervalSeconds,
+      }).unwrap();
+
+      dispatch(
+        saveOfflineDocument({
+          id: result.id,
+          title: result.title,
+          updateMode: values.updateMode,
+          updateInterval: values.updateInterval,
+          slo: values.slo,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+      );
+
+      toast.success(`Sub-document created under "${document?.title || "Parent"}"`);
+      setShowCreateSubDoc(false);
+      subDocForm.reset({
+        title: "Untitled Subpage",
+        updateMode: "manual",
+        updateInterval: "",
+        slo: "",
+      });
+      if (result?.id) {
+        router.push(`/dashboard/documents/${result.id}`);
+      }
+    } catch (err: unknown) {
+      const errorObj = err as { status?: number };
+      if (errorObj?.status === 402) {
+        setShowCreateSubDoc(false);
+        toast.error("Document limit reached. Upgrade your plan to create more documents.");
+      } else {
+        toast.error("Failed to create subpage");
+      }
+    }
+  };
   const [editorInstance, setEditorInstance] = useState<TiptapEditor | null>(null);
   const [savedContent, setSavedContent] = useState<string | null>(null);
   const [saveIndicator, setSaveIndicator] = useState<"idle" | "saving" | "saved">("saved");
@@ -223,20 +376,32 @@ export default function DocumentEditorPage() {
     }
   }, [document?.title]);
 
-  const saveTitle = useAutosave(async (newTitle: string) => {
-    setSaveIndicator("saving");
-    try {
-      await updateDocument({ workspaceId: docWorkspaceId, id, title: newTitle });
-      setSaveIndicator("saved");
-    } catch {
-      setSaveIndicator("idle");
-      toast.error("Failed to save title");
-    }
-  }, 800);
+  const saveTitleToDb = useCallback(
+    async (newTitle: string) => {
+      setSaveIndicator("saving");
+      try {
+        await updateDocument({ workspaceId: docWorkspaceId, id, title: newTitle });
+        setSaveIndicator("saved");
+      } catch {
+        setSaveIndicator("idle");
+        toast.error("Failed to save title");
+      }
+    },
+    [updateDocument, docWorkspaceId, id]
+  );
+
+  const autoSaveTitle = useAutosave(saveTitleToDb, 800);
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTitle(e.target.value);
-    saveTitle(e.target.value);
+    const newTitle = e.target.value;
+    setTitle(newTitle);
+
+    if (document?.updateMode === "auto") {
+      autoSaveTitle(newTitle);
+    } else {
+      setSaveIndicator("idle");
+    }
+
     if (titleRef.current) {
       titleRef.current.style.height = "auto";
       titleRef.current.style.height = `${titleRef.current.scrollHeight}px`;
@@ -251,17 +416,38 @@ export default function DocumentEditorPage() {
     }
   };
 
-  const save = useCallback(
-    async (content: string) => {
+  const offlineDoc = useSelector((state: RootState) => state.document.offlineDocs[id]);
+
+  useEffect(() => {
+    if (document) {
+      dispatch(
+        saveOfflineDocument({
+          id: document.id,
+          title: document.title,
+          updateMode: (document.updateMode as "auto" | "manual") || "manual",
+          updateInterval: document.updateIntervalSeconds
+            ? `${document.updateIntervalSeconds}s`
+            : undefined,
+          slo: document.slo || undefined,
+          content: document.content || "",
+          createdAt: document.createdAt || new Date().toISOString(),
+          updatedAt: document.updatedAt || new Date().toISOString(),
+        })
+      );
+    }
+  }, [document, dispatch]);
+
+  const saveToDb = useCallback(
+    async (content: string, customTitle?: string) => {
       setSaveIndicator("saving");
-      setSavedContent(content);
-      if (typeof window !== "undefined") {
-        try {
-          localStorage.setItem(`doc_draft_${id}`, content);
-        } catch {}
-      }
       try {
-        await updateDocument({ workspaceId: docWorkspaceId, id, content });
+        await updateDocument({
+          workspaceId: docWorkspaceId,
+          id,
+          content,
+          ...(customTitle ? { title: customTitle } : {}),
+        });
+        dispatch(updateOfflineDocumentContent({ id, content }));
         if (typeof window !== "undefined") {
           try {
             localStorage.removeItem(`doc_draft_${id}`);
@@ -269,46 +455,59 @@ export default function DocumentEditorPage() {
         }
         setSaveIndicator("saved");
       } catch {
+        dispatch(updateOfflineDocumentContent({ id, content }));
         setSaveIndicator("idle");
-        toast.error("Autosave failed — changes may not be saved");
+        toast.error("Save failed — changes stored locally");
       }
     },
-    [updateDocument, docWorkspaceId, id]
+    [updateDocument, docWorkspaceId, id, dispatch]
   );
 
-  const debouncedSave = useAutosave(save, 5000);
+  const autoSaveInterval = (document?.updateIntervalSeconds || 5) * 1000;
+  const autoSaveToDb = useAutosave(saveToDb, autoSaveInterval);
+
+  const handleContentUpdate = useCallback(
+    (content: string) => {
+      setSavedContent(content);
+      dispatch(updateOfflineDocumentContent({ id, content }));
+      if (typeof window !== "undefined") {
+        try {
+          localStorage.setItem(`doc_draft_${id}`, content);
+        } catch {}
+      }
+
+      if (document?.updateMode === "auto") {
+        autoSaveToDb(content);
+      } else {
+        // In manual mode, we just indicate there are unsaved changes
+        setSaveIndicator("idle");
+      }
+    },
+    [id, document?.updateMode, autoSaveToDb, dispatch]
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "s") {
         e.preventDefault();
-        setSaveIndicator("saving");
-        setTimeout(() => setSaveIndicator("saved"), 800);
+        const contentToSave = editorInstance?.getHTML() || savedContent || document?.content;
+        if (contentToSave) {
+          saveToDb(contentToSave, title !== document?.title ? title : undefined);
+        }
       }
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  }, [editorInstance, savedContent, title, document?.title, document?.content, saveToDb]);
 
   const stats = useMemo(
     () => getDocumentStats(savedContent ?? document?.content),
     [savedContent, document?.content]
   );
 
-  const handleCreateSubDoc = async () => {
+  const handleCreateSubDoc = () => {
     if (!docWorkspaceId || docWorkspaceId === "all") return;
-    try {
-      const result = await createDocument({
-        workspaceId: docWorkspaceId,
-        title: "Untitled Subpage",
-        parentId: id,
-      }).unwrap();
-      if (result?.id) {
-        router.push(`/dashboard/documents/${result.id}`);
-      }
-    } catch {
-      toast.error("Failed to create subpage");
-    }
+    setShowCreateSubDoc(true);
   };
 
   const handleCopyLink = () => {
@@ -547,6 +746,23 @@ export default function DocumentEditorPage() {
               </Button>
               */}
 
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowDocSettings(true)}
+                      className="h-8 px-2.5 text-[10px] gap-1.5 text-muted-foreground hover:text-foreground border border-border/60"
+                    >
+                      <Settings className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Settings</span>
+                    </Button>
+                  }
+                />
+                <TooltipContent>Document Settings (Mode & Interval)</TooltipContent>
+              </Tooltip>
+
               <Button
                 variant="default"
                 size="sm"
@@ -562,6 +778,13 @@ export default function DocumentEditorPage() {
                   <MoreHorizontal className="h-4 w-4" />
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem
+                    onClick={() => setShowDocSettings(true)}
+                    className="gap-2 text-[10px]"
+                  >
+                    <Settings className="h-3.5 w-3.5" />
+                    <span>Document Settings</span>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleCopyLink} className="gap-2 text-[10px]">
                     {isCopied ? (
                       <Check className="h-3.5 w-3.5 text-emerald-500" />
@@ -682,8 +905,8 @@ export default function DocumentEditorPage() {
 
               <div className="max-w-7xl mx-auto w-full px-6 pb-8">
                 <Editor
-                  initialContent={document.content}
-                  onSave={debouncedSave}
+                  initialContent={document.content || offlineDoc?.content}
+                  onSave={handleContentUpdate}
                   onEditorReady={setEditorInstance}
                 />
               </div>
@@ -766,6 +989,53 @@ export default function DocumentEditorPage() {
           <CommentsPanel workspaceId={docWorkspaceId} documentId={id} currentUserId={profile?.id} />
         </SheetContent>
       </Sheet>
+
+      <BottomDrawer
+        open={showCreateSubDoc}
+        onOpenChange={setShowCreateSubDoc}
+        title="Create Sub-Document"
+        description={`Add a new subpage under "${document?.title || "Parent Document"}"`}
+        footer={
+          <Button
+            onClick={subDocForm.handleSubmit(onCreateSubDocSubmit)}
+            className="w-full h-11 text-xs font-bold rounded-xl shadow-md gap-2"
+          >
+            <Plus className="h-4 w-4" /> Create Sub-Document
+          </Button>
+        }
+      >
+        <Form {...subDocForm}>
+          <DocumentFormFields
+            form={subDocForm}
+            onSubmit={subDocForm.handleSubmit(onCreateSubDocSubmit)}
+            parentDoc={{ id, title: document?.title || "Parent Document" }}
+            workspaceName={docWorkspaceId !== "all" ? docWorkspaceId : undefined}
+          />
+        </Form>
+      </BottomDrawer>
+
+      <BottomDrawer
+        open={showDocSettings}
+        onOpenChange={setShowDocSettings}
+        title="Document Settings"
+        description="Update title, update strategy mode, time interval, and SLO threshold."
+        footer={
+          <Button
+            onClick={docSettingsForm.handleSubmit(onDocSettingsSubmit)}
+            className="w-full h-11 text-xs font-bold rounded-xl shadow-md gap-2"
+          >
+            <Check className="h-4 w-4" /> Save Settings
+          </Button>
+        }
+      >
+        <Form {...docSettingsForm}>
+          <DocumentFormFields
+            form={docSettingsForm}
+            onSubmit={docSettingsForm.handleSubmit(onDocSettingsSubmit)}
+            isEdit
+          />
+        </Form>
+      </BottomDrawer>
     </div>
   );
 }

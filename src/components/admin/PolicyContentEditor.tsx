@@ -94,9 +94,8 @@ export function PolicyContentEditor({
     extensions: [
       StarterKit.configure({
         dropcursor: { color: "var(--ring)", width: 2 },
+        link: { openOnClick: false },
       }),
-      Underline,
-      Link.configure({ openOnClick: false }),
       Image,
       Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),

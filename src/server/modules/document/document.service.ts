@@ -28,6 +28,8 @@ const docListSelect = {
   authorId: true,
   order: true,
   readingTime: true,
+  updateMode: true,
+  updateIntervalSeconds: true,
   createdAt: true,
   updatedAt: true,
   deletedAt: true,

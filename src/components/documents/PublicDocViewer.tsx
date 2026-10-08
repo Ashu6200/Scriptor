@@ -26,9 +26,9 @@ import Tabs from "@/features/document/extensions/Tabs";
 import { Toggle } from "@/features/document/extensions/Toggle";
 
 const viewerExtensions = [
-  StarterKit,
-  Underline,
-  TiptapLink.configure({ openOnClick: true }),
+  StarterKit.configure({
+    link: { openOnClick: true },
+  }),
   Image,
   Highlight.configure({ multicolor: true }),
   TextAlign.configure({ types: ["heading", "paragraph"] }),

@@ -196,6 +196,9 @@ model Document {
   order       Float              @default(0)
   readingTime Int?
   tags        String[]
+  updateMode  String             @default("manual") // "auto" | "manual"
+  updateIntervalSeconds Int?
+  slo         String?
 
   parentId String?
   parent   Document?  @relation("DocumentTree", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)

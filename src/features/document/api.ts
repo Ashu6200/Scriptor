@@ -39,6 +39,9 @@ export interface Document {
   children?: DocumentChild[];
   visibility: "PUBLIC" | "PRIVATE";
   readingTime: number;
+  updateMode?: string;
+  updateIntervalSeconds?: number | null;
+  slo?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -134,7 +137,14 @@ export const documentApi = api.injectEndpoints({
     }),
     createDocument: builder.mutation<
       Document,
-      { workspaceId: string; title: string; parentId?: string; content?: string }
+      {
+        workspaceId: string;
+        title: string;
+        parentId?: string;
+        content?: string;
+        updateMode?: string;
+        updateIntervalSeconds?: number | null;
+      }
     >({
       query: ({ workspaceId, ...body }) => ({
         url: `/workspaces/${workspaceId}/documents`,
@@ -156,6 +166,9 @@ export const documentApi = api.injectEndpoints({
         changeSummary?: string;
         visibility?: "PRIVATE" | "PUBLIC";
         isPublished?: boolean;
+        updateMode?: string;
+        updateIntervalSeconds?: number | null;
+        slo?: string;
       }
     >({
       query: ({ workspaceId, id, ...body }) => ({

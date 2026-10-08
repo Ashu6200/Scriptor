@@ -1,5 +1,6 @@
 "use client";
 
+import { DocumentFormFields } from "@/components/documents/DocumentFormFields";
 import { UpgradeModal } from "@/components/modals/UpgradeModal";
 import { ErrorBanner } from "@/components/ui/ErrorBanner";
 import { BottomDrawer } from "@/components/ui/bottom-drawer";
@@ -37,12 +38,13 @@ import {
   useTogglePinWorkspaceApiMutation,
   useUpdateWorkspaceMutation,
 } from "@/features/workspace/api";
-import { cn } from "@/lib/utils";
+import { cn, parseIntervalToSeconds } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
   Building2,
   ChevronRight,
   FileText,
+  FolderOpen,
   Loader2,
   Pencil,
   Pin,
@@ -56,9 +58,34 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
 
+import { saveOfflineDocument } from "@/features/document/documentSlice";
+import { useDispatch } from "react-redux";
+
 const wsNameSchema = z.object({
   name: z.string().min(1, "Workspace name is required").max(100, "Name too long"),
 });
+
+const createDocSchema = z.object({
+  title: z.string().min(1, "Title is required").max(255, "Title too long"),
+  updateMode: z.enum(["auto", "manual"]).default("manual"),
+  updateInterval: z.string().optional(),
+  slo: z.string().optional(),
+});
+
+const docFormSchema = createDocSchema.refine(
+  (data) => {
+    if (data.updateMode === "auto") {
+      if (!data.updateInterval || !data.updateInterval.trim()) return false;
+      const secs = parseIntervalToSeconds(data.updateInterval);
+      return secs !== null && secs > 0;
+    }
+    return true;
+  },
+  {
+    message: "Valid update interval is required for auto mode (e.g. 30s, 5m, 1h)",
+    path: ["updateInterval"],
+  }
+);
 
 export default function WorkspacesPage() {
   const { data: workspaces = [], isLoading, isError } = useGetWorkspacesQuery();
@@ -198,9 +225,69 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
   const [editingDoc, setEditingDoc] = useState<{ id: string; title: string } | null>(null);
   const [editDocTitle, setEditDocTitle] = useState("");
 
-  const handleCreateRootDoc = async () => {
+  const dispatch = useDispatch();
+  const [showCreateDoc, setShowCreateDoc] = useState(false);
+  const [parentDoc, setParentDoc] = useState<{ id: string; title: string } | null>(null);
+
+  const docForm = useForm({
+    resolver: zodResolver(docFormSchema),
+    defaultValues: {
+      title: "Untitled Document",
+      updateMode: "manual",
+      updateInterval: "",
+      slo: "",
+    },
+  });
+  const watchUpdateMode = docForm.watch("updateMode");
+
+  const handleCreateRootDoc = () => {
+    setParentDoc(null);
+    docForm.setValue("title", "Untitled Document");
+    setShowCreateDoc(true);
+  };
+
+  const handleAddSubPage = useCallback(
+    (parent: { id: string; title: string }) => {
+      setParentDoc(parent);
+      docForm.setValue("title", "Untitled Subpage");
+      setShowCreateDoc(true);
+    },
+    [docForm]
+  );
+
+  const onCreateDocSubmit = async (values: z.infer<typeof createDocSchema>) => {
+    const updateIntervalSeconds =
+      values.updateMode === "auto" ? parseIntervalToSeconds(values.updateInterval) : null;
+
     try {
-      const doc = await createDoc({ workspaceId: workspace.id, title: "Untitled" }).unwrap();
+      const doc = await createDoc({
+        workspaceId: workspace.id,
+        title: values.title.trim(),
+        parentId: parentDoc?.id,
+        updateMode: values.updateMode,
+        updateIntervalSeconds,
+      }).unwrap();
+
+      dispatch(
+        saveOfflineDocument({
+          id: doc.id,
+          title: doc.title,
+          updateMode: values.updateMode,
+          updateInterval: values.updateInterval,
+          slo: values.slo,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+      );
+
+      setShowCreateDoc(false);
+      setParentDoc(null);
+      docForm.reset({
+        title: "Untitled Document",
+        updateMode: "manual",
+        updateInterval: "",
+        slo: "",
+      });
       router.push(`/dashboard/documents/${doc.id}`);
     } catch (err: unknown) {
       const errorObj = err as { status?: number; data?: { message?: string } };
@@ -220,31 +307,6 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
       }
     }
   };
-
-  const handleAddSubPage = useCallback(
-    async (parentId: string) => {
-      try {
-        await createDoc({ workspaceId: workspace.id, title: "Untitled", parentId }).unwrap();
-      } catch (err: unknown) {
-        const errorObj = err as { status?: number; data?: { message?: string } };
-        if (errorObj?.status === 402) {
-          toast.error(
-            errorObj.data?.message ||
-              "Document limit reached. Upgrade to Pro for unlimited documents.",
-            {
-              action: {
-                label: "Upgrade",
-                onClick: () => router.push("/dashboard/billing"),
-              },
-            }
-          );
-        } else {
-          toast.error("Failed to create subpage");
-        }
-      }
-    },
-    [createDoc, workspace.id, router]
-  );
 
   const onEditWsSubmit = async (values: z.infer<typeof wsNameSchema>) => {
     if (values.name.trim() === workspace.name) {
@@ -471,6 +533,38 @@ function WorkspaceCard({ workspace }: { workspace: Workspace }) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <BottomDrawer
+        open={showCreateDoc}
+        onOpenChange={(open) => {
+          setShowCreateDoc(open);
+          if (!open) setParentDoc(null);
+        }}
+        title={parentDoc ? "Create Sub-Document" : "Create Document"}
+        description={
+          parentDoc
+            ? `Creating a sub-document under "${parentDoc.title}" in workspace "${workspace.name}"`
+            : `Add a new document to workspace "${workspace.name}"`
+        }
+        footer={
+          <Button
+            onClick={docForm.handleSubmit(onCreateDocSubmit)}
+            className="w-full h-11 text-xs font-bold rounded-xl shadow-md gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            {parentDoc ? "Create Sub-Document" : "Create Document"}
+          </Button>
+        }
+      >
+        <Form {...docForm}>
+          <DocumentFormFields
+            form={docForm}
+            onSubmit={docForm.handleSubmit(onCreateDocSubmit)}
+            parentDoc={parentDoc}
+            workspaceName={workspace.name}
+          />
+        </Form>
+      </BottomDrawer>
     </>
   );
 }
@@ -486,7 +580,7 @@ const TreeRow = memo(function TreeRow({
   item: DocumentTreeItem;
   workspaceId: string;
   depth: number;
-  onAddSubPage: (parentId: string) => void;
+  onAddSubPage: (parent: { id: string; title: string }) => void;
   onEditDoc: (doc: { id: string; title: string }) => void;
   onDeleteDoc: (id: string) => void;
 }) {
@@ -524,12 +618,12 @@ const TreeRow = memo(function TreeRow({
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
-              onAddSubPage(item.id);
+              onAddSubPage({ id: item.id, title: item.title });
             }}
             variant="ghost"
             size="sm"
           >
-            <Plus className="h-3.5 w-3.5 mr-1" /> New Doc
+            <Plus className="h-3.5 w-3.5 mr-1" /> New Subpage
           </Button>
           <Button
             variant="ghost"

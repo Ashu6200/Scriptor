@@ -15,6 +15,8 @@ export const createDocumentSchema = z.object({
   icon: z.string().optional().nullable(),
   coverImage: z.string().url().optional().nullable(),
   tags: z.array(z.string()).default([]),
+  updateMode: z.enum(["auto", "manual"]).default("manual").optional(),
+  updateIntervalSeconds: z.number().int().positive().optional().nullable(),
 });
 
 export const updateDocumentSchema = z.object({
@@ -27,6 +29,8 @@ export const updateDocumentSchema = z.object({
   tags: z.array(z.string()).optional(),
   order: z.number().optional(),
   changeSummary: z.string().max(500).optional(),
+  updateMode: z.enum(["auto", "manual"]).optional(),
+  updateIntervalSeconds: z.number().int().positive().optional().nullable(),
 });
 
 export const listDocumentsQuerySchema = z.object({
