@@ -16,11 +16,17 @@ export const workspaceApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getWorkspaces: builder.query<Workspace[], void>({
       query: () => "/workspaces",
-      providesTags: ["Workspace"],
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.map(({ id }) => ({ type: "Workspace" as const, id })),
+              { type: "Workspace", id: "LIST" },
+            ]
+          : [{ type: "Workspace", id: "LIST" }],
     }),
     getPinnedWorkspaces: builder.query<Workspace[], void>({
       query: () => "/workspaces/pinned",
-      providesTags: ["Workspace"],
+      providesTags: [{ type: "Workspace", id: "PINNED" }],
     }),
     getWorkspaceById: builder.query<Workspace, string>({
       query: (id) => `/workspaces/${id}`,
@@ -36,7 +42,10 @@ export const workspaceApi = api.injectEndpoints({
         method: "POST",
         body,
       }),
-      invalidatesTags: ["Workspace"],
+      invalidatesTags: [
+        { type: "Workspace", id: "LIST" },
+        { type: "Dashboard", id: "STATS" },
+      ],
     }),
     updateWorkspace: builder.mutation<Workspace, { id: string; data: Partial<Workspace> }>({
       query: ({ id, data }) => ({
@@ -44,7 +53,11 @@ export const workspaceApi = api.injectEndpoints({
         method: "PUT",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [{ type: "Workspace", id }, "Workspace"],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Workspace", id },
+        { type: "Workspace", id: "LIST" },
+        { type: "Workspace", id: "PINNED" },
+      ],
     }),
     togglePinWorkspaceApi: builder.mutation<
       { workspaceId: string; isPinned: boolean; pinnedWorkspaceIds: string[] },
@@ -55,7 +68,7 @@ export const workspaceApi = api.injectEndpoints({
         method: "POST",
       }),
       async onQueryStarted(workspaceId, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
+        const patchWorkspaces = dispatch(
           workspaceApi.util.updateQueryData("getWorkspaces", undefined, (draft) => {
             const ws = draft.find((w) => w.id === workspaceId);
             if (ws) {
@@ -63,13 +76,22 @@ export const workspaceApi = api.injectEndpoints({
             }
           })
         );
+        const patchPinned = dispatch(
+          workspaceApi.util.updateQueryData("getPinnedWorkspaces", undefined, (draft) => {
+            const idx = draft.findIndex((w) => w.id === workspaceId);
+            if (idx !== -1) {
+              draft.splice(idx, 1);
+            }
+          })
+        );
         try {
           await queryFulfilled;
         } catch {
-          patchResult.undo();
+          patchWorkspaces.undo();
+          patchPinned.undo();
         }
       },
-      invalidatesTags: ["Workspace"],
+      invalidatesTags: (result) => (result?.isPinned ? [{ type: "Workspace", id: "PINNED" }] : []),
     }),
     reorderPinnedWorkspacesApi: builder.mutation<Workspace[], string[]>({
       query: (workspaceIds) => ({
@@ -77,14 +99,18 @@ export const workspaceApi = api.injectEndpoints({
         method: "PUT",
         body: { workspaceIds },
       }),
-      invalidatesTags: ["Workspace"],
+      invalidatesTags: [{ type: "Workspace", id: "PINNED" }],
     }),
     deleteWorkspace: builder.mutation<void, string>({
       query: (id) => ({
         url: `/workspaces/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Workspace"],
+      invalidatesTags: [
+        { type: "Workspace", id: "LIST" },
+        { type: "Workspace", id: "PINNED" },
+        { type: "Dashboard", id: "STATS" },
+      ],
     }),
   }),
 });

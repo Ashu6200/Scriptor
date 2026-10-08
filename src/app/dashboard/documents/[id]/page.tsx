@@ -39,6 +39,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
+  type Document as DocumentItem,
   type DocumentTreeItem,
   type DocumentVersion,
   useCreateDocumentMutation,
@@ -970,6 +971,7 @@ export default function DocumentEditorPage() {
       <ShareDialog
         workspaceId={docWorkspaceId}
         documentId={id}
+        document={document}
         open={showShare}
         onOpenChange={setShowShare}
       />
@@ -1179,15 +1181,16 @@ function HistoryPanel({
 function ShareDialog({
   workspaceId,
   documentId,
+  document,
   open,
   onOpenChange,
 }: {
   workspaceId: string;
   documentId: string;
+  document?: DocumentItem;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
-  const { data: document } = useGetDocumentQuery({ workspaceId, id: documentId }, { skip: !open });
   const { data: workspaces = [] } = useGetWorkspacesQuery(undefined, { skip: !open });
   const [updateDocument, { isLoading: isUpdating }] = useUpdateDocumentMutation();
   const [isCopiedPublic, setIsCopiedPublic] = useState(false);

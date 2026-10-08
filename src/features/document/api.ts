@@ -154,6 +154,7 @@ export const documentApi = api.injectEndpoints({
       invalidatesTags: (result, error, { workspaceId }) => [
         { type: "Document", id: "LIST" },
         { type: "Document", id: `TREE-${workspaceId}` },
+        { type: "Dashboard", id: "STATS" },
       ],
     }),
     updateDocument: builder.mutation<
@@ -176,10 +177,48 @@ export const documentApi = api.injectEndpoints({
         method: "PUT",
         body,
       }),
-      invalidatesTags: (result, error, { id, workspaceId }) => [
-        { type: "Document", id },
-        { type: "Document", id: `TREE-${workspaceId}` },
-      ],
+      async onQueryStarted({ workspaceId, id, title }, { dispatch, queryFulfilled }) {
+        try {
+          const { data: updatedDoc } = await queryFulfilled;
+          dispatch(
+            documentApi.util.updateQueryData("getDocument", { workspaceId: "all", id }, (draft) => {
+              Object.assign(draft, updatedDoc);
+            })
+          );
+          dispatch(
+            documentApi.util.updateQueryData("getDocument", { workspaceId, id }, (draft) => {
+              Object.assign(draft, updatedDoc);
+            })
+          );
+          if (title !== undefined) {
+            dispatch(
+              documentApi.util.updateQueryData("getDocumentTree", workspaceId, (draft) => {
+                const updateTitleInTree = (nodes: DocumentTreeItem[]) => {
+                  for (const node of nodes) {
+                    if (node.id === id) {
+                      node.title = title;
+                      return;
+                    }
+                    if (node.children?.length) {
+                      updateTitleInTree(node.children);
+                    }
+                  }
+                };
+                updateTitleInTree(draft);
+              })
+            );
+          }
+        } catch {
+          // Keep draft intact on error
+        }
+      },
+      invalidatesTags: (_result, _error, { title, workspaceId }) =>
+        title !== undefined
+          ? [
+              { type: "Document", id: "LIST" },
+              { type: "Document", id: `TREE-${workspaceId}` },
+            ]
+          : [],
     }),
     deleteDocument: builder.mutation<void, { workspaceId: string; id: string }>({
       query: ({ workspaceId, id }) => ({
@@ -190,6 +229,7 @@ export const documentApi = api.injectEndpoints({
         { type: "Document", id: "LIST" },
         { type: "Document", id: "TRASH" },
         { type: "Document", id: `TREE-${workspaceId}` },
+        { type: "Dashboard", id: "STATS" },
       ],
     }),
 
@@ -207,6 +247,7 @@ export const documentApi = api.injectEndpoints({
         { type: "Document", id: "LIST" },
         { type: "Document", id: "TRASH" },
         { type: "Document", id: `TREE-${workspaceId}` },
+        { type: "Dashboard", id: "STATS" },
       ],
     }),
     permanentlyDeleteDocument: builder.mutation<void, { workspaceId: string; id: string }>({
@@ -217,6 +258,7 @@ export const documentApi = api.injectEndpoints({
       invalidatesTags: [
         { type: "Document", id: "LIST" },
         { type: "Document", id: "TRASH" },
+        { type: "Dashboard", id: "STATS" },
       ],
     }),
     emptyTrash: builder.mutation<{ count: number }, { workspaceId: string }>({
@@ -227,6 +269,7 @@ export const documentApi = api.injectEndpoints({
       invalidatesTags: [
         { type: "Document", id: "LIST" },
         { type: "Document", id: "TRASH" },
+        { type: "Dashboard", id: "STATS" },
       ],
     }),
 

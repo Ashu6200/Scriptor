@@ -25,15 +25,24 @@ export default function AdminWorkspacesPage() {
     defaultValues: { search: "", plan: "" },
   });
   const { search, plan } = form.watch();
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, plan]);
+  }, [plan]);
 
   const { data, isLoading } = useGetAdminWorkspacesQuery({
     page,
     limit: 20,
-    search: search || undefined,
+    search: debouncedSearch ? debouncedSearch.trim() : undefined,
     plan: plan || undefined,
   });
   const [suspendWorkspace] = useSuspendWorkspaceMutation();

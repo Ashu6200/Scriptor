@@ -101,16 +101,25 @@ export default function AdminConsentsPage() {
     defaultValues: { search: "", status: "", fromDate: "", toDate: "" },
   });
   const { search, status: statusFilter, fromDate, toDate } = watch();
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, statusFilter, fromDate, toDate]);
+  }, [statusFilter, fromDate, toDate]);
 
   const { data, isLoading } = useSearchAdminConsentsQuery({
     page,
     limit: 20,
     status: statusFilter || undefined,
-    search: search || undefined,
+    search: debouncedSearch ? debouncedSearch.trim() : undefined,
     from: fromDate || undefined,
     to: toDate || undefined,
   });

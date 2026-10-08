@@ -24,12 +24,18 @@ function getRange(
     return { from: start.toISOString(), to: end.toISOString() };
   }
   if (period === "7d") {
-    const start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    return { from: start.toISOString(), to: now.toISOString() };
+    const end = new Date(now);
+    end.setUTCHours(23, 59, 59, 999);
+    const start = new Date(end.getTime() - 7 * 24 * 60 * 60 * 1000);
+    start.setUTCHours(0, 0, 0, 0);
+    return { from: start.toISOString(), to: end.toISOString() };
   }
   if (period === "30d") {
-    const start = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
-    return { from: start.toISOString(), to: now.toISOString() };
+    const end = new Date(now);
+    end.setUTCHours(23, 59, 59, 999);
+    const start = new Date(end.getTime() - 30 * 24 * 60 * 60 * 1000);
+    start.setUTCHours(0, 0, 0, 0);
+    return { from: start.toISOString(), to: end.toISOString() };
   }
   if (period === "custom" && customFrom && customTo) {
     return {

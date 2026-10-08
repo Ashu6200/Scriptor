@@ -27,7 +27,7 @@ export const userApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getProfile: builder.query<UserProfile, void>({
       query: () => "/users/profile",
-      providesTags: ["User"],
+      providesTags: [{ type: "User", id: "PROFILE" }],
     }),
     updateProfile: builder.mutation<UserProfile, Partial<UserProfile>>({
       query: (body) => ({
@@ -35,7 +35,7 @@ export const userApi = api.injectEndpoints({
         method: "PUT",
         body,
       }),
-      invalidatesTags: ["User"],
+      invalidatesTags: [{ type: "User", id: "PROFILE" }],
     }),
     changePassword: builder.mutation<
       { success: boolean },

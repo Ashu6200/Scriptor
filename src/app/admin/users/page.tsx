@@ -36,15 +36,24 @@ export default function AdminUsersPage() {
     defaultValues: { search: "", role: "", status: "" },
   });
   const { search, role, status } = form.watch();
+  const [debouncedSearch, setDebouncedSearch] = useState(search);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   useEffect(() => {
     setPage(1);
-  }, [search, role, status]);
+  }, [role, status]);
 
   const { data, isLoading } = useGetAdminUsersQuery({
     page,
     limit: 20,
-    search: search || undefined,
+    search: debouncedSearch ? debouncedSearch.trim() : undefined,
     role: role || undefined,
     status: status || undefined,
   });

@@ -12,7 +12,7 @@ export const dashboardApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getDashboardStats: builder.query<DashboardStats, void>({
       query: () => "/dashboard/stats",
-      providesTags: ["Dashboard", "Workspace", "Document", "User"],
+      providesTags: [{ type: "Dashboard", id: "STATS" }],
     }),
   }),
 });

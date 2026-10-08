@@ -24,7 +24,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const STATUS_COLORS: Record<string, { bg: string; text: string; dot: string }> = {
@@ -64,13 +64,22 @@ function StatusBadge({ status }: { status: string }) {
 export default function PoliciesListPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const { data, isLoading } = useListPoliciesQuery({
     page,
     limit: 20,
     status: statusFilter || undefined,
-    search: search || undefined,
+    search: debouncedSearch ? debouncedSearch.trim() : undefined,
   });
 
   const [publishPolicy] = usePublishPolicyMutation();
